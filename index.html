@@ -836,7 +836,9 @@ function saveStats(){S.level=level;S.caseNo=caseNo;try{localStorage.setItem("mys
    CONTA + SUBSCRIÇÃO (backend)
    ========================================================= */
 // >>> Depois de fazeres deploy do backend no Render, mete aqui o URL <<<
-const API_BASE="https://mysterioku-backend.onrender.com";
+const API_BASE="https://mysterioku-backend-90li.onrender.com";
+// >>> Depois de criares as credenciais no Google Cloud, mete aqui o teu Client ID <<<
+const GOOGLE_CLIENT_ID="";
 const ACCOUNT={token:localStorage.getItem("myst_tok")||null, state:null};
 function authed(){return !!ACCOUNT.token;}
 function premium(){return !!(ACCOUNT.state&&ACCOUNT.state.premium);}
@@ -867,6 +869,33 @@ async function doLogin(email,password){
   const r=await api("/auth/login",{method:"POST",body:{email,password}});
   if(r.ok){saveTok(r.data.token);ACCOUNT.state=r.data.state;}
   return r;
+}
+async function doGoogle(credential){
+  const r=await api("/auth/google",{method:"POST",body:{credential}});
+  if(r.ok){saveTok(r.data.token);ACCOUNT.state=r.data.state;$("authVeil").classList.remove("on");renderHome();toast("Ol\u00E1! Sess\u00E3o iniciada com Google.");}
+  else{toast("N\u00E3o foi poss\u00EDvel entrar com Google.");}
+  return r;
+}
+// Carrega a biblioteca do Google uma vez.
+let _gsiLoaded=false;
+function loadGsi(cb){
+  if(_gsiLoaded){cb&&cb();return;}
+  const s=document.createElement("script");
+  s.src="https://accounts.google.com/gsi/client";s.async=true;s.defer=true;
+  s.onload=()=>{_gsiLoaded=true;cb&&cb();};
+  document.head.appendChild(s);
+}
+function renderGoogleButton(containerId){
+  if(!GOOGLE_CLIENT_ID)return; // sem Client ID configurado, esconde o botão
+  loadGsi(()=>{
+    if(!window.google||!google.accounts||!google.accounts.id)return;
+    google.accounts.id.initialize({
+      client_id:GOOGLE_CLIENT_ID,
+      callback:(resp)=>{if(resp&&resp.credential)doGoogle(resp.credential);}
+    });
+    const el=$(containerId);
+    if(el){el.innerHTML="";google.accounts.id.renderButton(el,{theme:"outline",size:"large",width:260,text:"continue_with",locale:"pt-PT"});}
+  });
 }
 function doLogout(){saveTok(null);ACCOUNT.state=null;go("home");}
 async function startCheckout(){
@@ -1532,8 +1561,11 @@ function openAuth(mode){
     '<input id="au_pass" type="password" placeholder="Palavra-passe (m\u00EDn. 6)" autocomplete="current-password" style="width:100%;padding:12px;border:2px solid var(--ink);border-radius:12px;font:inherit;box-sizing:border-box"/>'+
     '<div id="au_err" style="color:var(--red);font-size:12.5px;font-weight:700;min-height:16px;margin:6px 2px"></div>'+
     '<div class="modal-actions"><button class="btn" id="au_cancel" style="flex:1">Cancelar</button>'+
-    '<button class="btn accuse" id="au_go" style="flex:1.4">'+(mode==="login"?"Entrar":"Criar conta")+'</button></div>';
+    '<button class="btn accuse" id="au_go" style="flex:1.4">'+(mode==="login"?"Entrar":"Criar conta")+'</button></div>'+
+    (GOOGLE_CLIENT_ID?('<div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px;color:var(--ink-soft);font-size:11.5px"><div style="flex:1;height:1px;background:var(--ink);opacity:.2"></div>ou<div style="flex:1;height:1px;background:var(--ink);opacity:.2"></div></div>'+
+     '<div id="au_google" style="display:flex;justify-content:center"></div>'):'');
   $("authVeil").classList.add("on");
+  if(GOOGLE_CLIENT_ID)renderGoogleButton("au_google");
   $("au_tl").onclick=()=>openAuth("login");
   $("au_tr").onclick=()=>openAuth("register");
   $("au_cancel").onclick=()=>$("authVeil").classList.remove("on");
