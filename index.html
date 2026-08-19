@@ -355,8 +355,10 @@ button{font-family:var(--sans)}
 
   /* --- Ecrã do tabuleiro: duas colunas (tabuleiro | investigação) ---
      Coluna esquerda: cabeçalho + tabuleiro + barra de ações.
-     Coluna direita: suspeitos + depoimentos (rola).                    */
-  #scr-board{
+     Coluna direita: suspeitos + depoimentos (rola).
+     IMPORTANTE: só aplica quando o ecrã está ativo (.on), senão sobrepunha
+     os outros ecrãs (que dependem de .screen{display:none}).             */
+  #scr-board.on{
     display:grid;
     grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr);
     grid-template-rows:auto auto auto 1fr;
@@ -417,7 +419,7 @@ button{font-family:var(--sans)}
 
 /* Ecrãs muito largos: equilibrar as colunas */
 @media(min-width:1400px){
-  #scr-board{grid-template-columns:minmax(0,1fr) minmax(420px,.8fr);column-gap:48px}
+  #scr-board.on{grid-template-columns:minmax(0,1fr) minmax(420px,.8fr);column-gap:48px}
 }
 </style>
 </head>
