@@ -338,6 +338,87 @@ button{font-family:var(--sans)}
   .cl .tx{font-size:11.5px}
   .pol{width:60px}
 }
+
+/* ================= LAYOUT DESKTOP ================= */
+@media(min-width:900px){
+  /* O contentor deixa de ser uma coluna estreita e passa a usar o ecrã */
+  .app{max-width:1180px}
+  .bar .row{max-width:none}
+
+  /* --- Ecrãs de menu (home, diário, registo): conteúdo centrado e mais largo --- */
+  #scr-home .scroll,#scr-daily .scroll,#scr-stats .scroll,#scr-daily .daily{
+    max-width:900px;margin:0 auto;width:100%;
+  }
+  .ph h1{font-size:34px}
+  .ph .kicker{font-size:12px;letter-spacing:4px}
+  #scr-home .levels3{gap:14px}
+
+  /* --- Ecrã do tabuleiro: duas colunas (tabuleiro | investigação) ---
+     Coluna esquerda: cabeçalho + tabuleiro + barra de ações.
+     Coluna direita: suspeitos + depoimentos (rola).                    */
+  #scr-board{
+    display:grid;
+    grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr);
+    grid-template-rows:auto auto auto 1fr;
+    grid-template-areas:
+      "head   side-top"
+      "board  side-clues"
+      "bar    side-clues"
+      ".      side-clues";
+    column-gap:34px;row-gap:12px;
+    max-width:1180px;margin:0 auto;width:100%;
+    padding:calc(var(--safe-top) + 18px) 40px 22px;
+    box-sizing:border-box;
+    align-items:start;
+  }
+  #scr-board .bhead{grid-area:head;padding-bottom:6px}
+  #scr-board .bhead h1{font-size:24px}
+  #scr-board .bhead .k{font-size:11px}
+
+  /* Tabuleiro grande, a aproveitar a altura disponível */
+  #scr-board .scene{
+    grid-area:board;align-self:start;justify-self:start;
+    width:min(100%,70vh);max-width:620px;margin:0;
+  }
+
+  /* A tira de suspeitos passa a grelha que quebra em várias linhas, no topo da coluna direita */
+  #scr-board .strip{
+    grid-area:side-top;align-self:start;
+    display:flex;flex-wrap:wrap;gap:12px;overflow:visible;
+    padding:0 0 14px;margin:0;
+    max-height:none;
+  }
+  #scr-board .strip .pol{width:92px}
+
+  /* Os depoimentos ficam na coluna direita, a seguir aos suspeitos e a rolar */
+  #scr-board .clues{
+    grid-area:side-clues;align-self:stretch;
+    margin:0;padding:0;overflow-y:auto;min-height:0;max-height:70vh;
+    border-top:2px dashed rgba(36,31,46,.25);padding-top:12px;
+  }
+
+  /* Barra de ações logo por baixo do tabuleiro, à largura do tabuleiro */
+  #scr-board .bar{
+    grid-area:bar;align-self:start;justify-self:start;
+    padding:8px 0 0;background:none;
+    width:min(100%,70vh);max-width:620px;
+  }
+  #scr-board .bar .row{display:flex;gap:12px}
+  #scr-board .bar .btn{font-size:15px;padding:13px 18px}
+
+  /* Modais um pouco maiores em ecrã grande */
+  .sheet{max-width:460px}
+
+  /* Hover só com rato */
+  .gcell.occ:hover{filter:brightness(1.04)}
+  .btn:hover{filter:brightness(1.03)}
+  .cl:hover{border-color:var(--red)}
+}
+
+/* Ecrãs muito largos: equilibrar as colunas */
+@media(min-width:1400px){
+  #scr-board{grid-template-columns:minmax(0,1fr) minmax(420px,.8fr);column-gap:48px}
+}
 </style>
 </head>
 <body>
