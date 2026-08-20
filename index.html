@@ -444,7 +444,7 @@ button{font-family:var(--sans)}
   <h1>Mysterioku</h1>
   <div class="tag">Lógica de sudoku, aplicada a um caso por resolver.<br>Cruza as pistas, elimina o impossível<br>e deduz quem não tem álibi.</div>
   <button class="btn accuse" id="startBtn" style="max-width:240px;flex:none">Come&ccedil;ar a investigar</button>
-  <button class="btn" id="introRules" style="max-width:240px;flex:none;margin-top:10px;background:transparent;box-shadow:none;border-width:2px">Como se joga</button>
+  <button class="btn" id="introRules" data-i18n="howToPlay" style="max-width:240px;flex:none;margin-top:10px;background:transparent;box-shadow:none;border-width:2px">Como se joga</button>
   <div class="counter" id="introCount"></div>
 </div>
 
@@ -453,14 +453,14 @@ button{font-family:var(--sans)}
   <!-- ===== INÍCIO ===== -->
   <section class="screen" id="scr-home">
     <div class="ph">
-      <div class="kicker">Departamento de Investiga&ccedil;&atilde;o</div>
+      <div class="kicker" data-i18n="dept">Departamento de Investiga&ccedil;&atilde;o</div>
       <h1>Mysterioku</h1>
       <div id="homeAccount"></div>
     </div>
     <div class="scroll">
       <div class="card2 hi" id="homeDaily"></div>
       <div id="homeResume"></div>
-      <div class="sec-title">Caso avulso</div>
+      <div class="sec-title" data-i18n="loose">Caso avulso</div>
       <div class="levels3" id="homeLevels"></div>
       <div class="stats3" id="homeStats"></div>
     </div>
@@ -489,11 +489,11 @@ button{font-family:var(--sans)}
     <div class="scene"><div class="grid" id="grid"></div></div>
     <div class="strip" id="strip"></div>
     <div class="clues">
-      <div class="sec-title" style="margin-top:2px">Depoimentos <span class="muted">toca para expandir</span></div>
+      <div class="sec-title" style="margin-top:2px"><span data-i18n="testimonies">Depoimentos</span> <span class="muted" data-i18n="tapExpand">toca para expandir</span></div>
       <div id="clueList"></div>
     </div>
     <div class="bar"><div class="row">
-      <button class="btn" id="clearBtn">Limpar</button>
+      <button class="btn" id="clearBtn" data-i18n="clear">Limpar</button>
       <button class="btn hintb" id="hintBtn">&#128161;</button>
       <button class="btn accuse" id="accuseBtn" disabled>Acusar</button>
     </div></div>
@@ -502,8 +502,8 @@ button{font-family:var(--sans)}
   <!-- ===== REGISTO ===== -->
   <section class="screen" id="scr-stats">
     <div class="ph">
-      <div class="kicker">Ficha do inspetor</div>
-      <h1>Registo</h1>
+      <div class="kicker" data-i18n="inspectorSheet">Ficha do inspetor</div>
+      <h1 data-i18n="registo">Registo</h1>
     </div>
     <div class="scroll" id="statsBody"></div>
     <nav class="tabs" id="tabs3"></nav>
@@ -513,7 +513,7 @@ button{font-family:var(--sans)}
   <section class="screen" id="scr-archive">
     <div class="ph">
       <div class="kicker" id="archCount">Arquivo de casos</div>
-      <h1>Arquivo</h1>
+      <h1 data-i18n="arquivo">Arquivo</h1>
     </div>
     <div class="scroll">
       <div class="filters" id="archFilters"></div>
@@ -525,8 +525,8 @@ button{font-family:var(--sans)}
   <!-- ===== AJUSTES ===== -->
   <section class="screen" id="scr-settings">
     <div class="ph">
-      <div class="kicker">Prefer&ecirc;ncias</div>
-      <h1>Ajustes</h1>
+      <div class="kicker" data-i18n="prefs">Prefer&ecirc;ncias</div>
+      <h1 data-i18n="ajustes">Ajustes</h1>
     </div>
     <div class="scroll" id="setBody"></div>
     <nav class="tabs" id="tabs5"></nav>
@@ -543,47 +543,190 @@ button{font-family:var(--sans)}
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
+
+/* ================= IDIOMA (PT/EN) ================= */
+let LANG = (function(){
+  try{ const v=localStorage.getItem("myst_lang"); if(v==="pt"||v==="en") return v; }catch(e){}
+  try{ return (navigator.language||"pt").toLowerCase().startsWith("en") ? "en" : "pt"; }catch(e){ return "pt"; }
+})();
+function setLang(l){ LANG=(l==="en"?"en":"pt"); try{localStorage.setItem("myst_lang",LANG);}catch(e){} }
+// tradução simples: tr({pt:"...",en:"..."}) ou tr("igual nos dois")
+function tr(o){ if(o==null) return ""; if(typeof o==="string") return o; return (o[LANG]!=null?o[LANG]:o.pt); }
+
+// Dicionário central de strings da interface (PT/EN)
+const UI={
+  dept:{pt:"Departamento de Investiga\u00E7\u00E3o",en:"Department of Investigation"},
+  loose:{pt:"Caso avulso",en:"Free case"},
+  testimonies:{pt:"Depoimentos",en:"Testimonies"},
+  tapExpand:{pt:"toca para expandir",en:"tap to expand"},
+  clear:{pt:"Limpar",en:"Clear"},
+  howToPlay:{pt:"Como se joga",en:"How to play"},
+  registo:{pt:"Registo",en:"Record"},
+  arquivo:{pt:"Arquivo",en:"Archive"},
+  arquivoCasos:{pt:"Arquivo de casos",en:"Case archive"},
+  ajustes:{pt:"Ajustes",en:"Settings"},
+  casos:{pt:"Casos",en:"Cases"},
+  diario:{pt:"Di\u00E1rio",en:"Daily"},
+  easy:{pt:"F\u00E1cil",en:"Easy"}, medium:{pt:"M\u00E9dio",en:"Medium"}, hard:{pt:"Dif\u00EDcil",en:"Hard"},
+  caseW:{pt:"Caso",en:"Case"},
+  suspects:{pt:"suspeitos",en:"suspects"},
+  investigate:{pt:"Investigar",en:"Investigate"},
+  rules:{pt:"Regras",en:"Rules"},
+  dailyCase:{pt:"Caso do dia",en:"Daily case"},
+  guest:{pt:"Convidado \u00B7 caso do dia + 1 extra",en:"Guest \u00B7 daily case + 1 extra"},
+  login:{pt:"Entrar",en:"Sign in"},
+  createAcc:{pt:"Criar conta",en:"Create account"},
+  premium:{pt:"Premium",en:"Premium"},
+  extraToday:{pt:"extra hoje",en:"extra today"},
+  next:{pt:"Pr\u00F3ximo caso",en:"Next case"},
+  reg:{pt:"Registo",en:"Record"},
+  casesClosed:{pt:"casos encerrados",en:"cases closed"},
+  solvedN:{pt:"casos resolvidos",en:"cases solved"},
+  defaultDiff:{pt:"Dificuldade padr\u00E3o",en:"Default difficulty"},
+  palette:{pt:"Paleta",en:"Palette"},
+  paletteD:{pt:"Muda a cor das divis\u00F5es e do fundo",en:"Change the color of rooms and background"},
+  resetProg:{pt:"Repor progresso",en:"Reset progress"},
+  progReset:{pt:"Progresso reposto.",en:"Progress reset."},
+  diffToast:{pt:"Dificuldade: ",en:"Difficulty: "},
+  sceneCleared:{pt:"Cena limpa.",en:"Scene cleared."},
+  understood:{pt:"Percebi",en:"Got it"},
+  back:{pt:"Voltar",en:"Back"},
+  language:{pt:"Idioma",en:"Language"},
+  resolved:{pt:"RESOLVIDOS",en:"SOLVED"},
+  daysStreak:{pt:"DIAS SEGUIDOS",en:"DAY STREAK"},
+  best:{pt:"MELHOR",en:"BEST"},
+  allPlacedTarget:{pt:"Todos colocados. O alvo est\u00E1 na c\u00E9lula que sobrou.",en:"All placed. The target is in the leftover cell."},
+  hello:{pt:"Ol\u00E1! Sess\u00E3o iniciada.",en:"Hi! You're signed in."},
+  inspectorSheet:{pt:"Ficha do inspetor",en:"Inspector file"},
+  prefs:{pt:"Prefer\u00EAncias",en:"Preferences"},
+  novo:{pt:"NOVO",en:"NEW"},
+  dailyCaseDate:{pt:"Caso do dia",en:"Daily case"},
+  dailyBlurb:{pt:"Um caso novo todos os dias. Resolve a grelha e aponta quem n\u00E3o tem \u00E1libi.",en:"A new case every day. Solve the grid and point out who has no alibi."},
+  dailyDoneBlurb:{pt:"J\u00E1 encerraste o caso de hoje. Volta amanh\u00E3 para o pr\u00F3ximo.",en:"You've closed today's case. Come back tomorrow for the next one."},
+  manage:{pt:"Gerir",en:"Manage"},
+  logout:{pt:"Sair",en:"Log out"},
+  lvl1D:{pt:"Grelha 4\u00D74, 3 suspeitos. Pistas diretas.",en:"4\u00D74 grid, 3 suspects. Direct clues."},
+  lvl2D:{pt:"Grelha 5\u00D75, 4 suspeitos. Nega\u00E7\u00F5es e dire\u00E7\u00F5es.",en:"5\u00D75 grid, 4 suspects. Negations and directions."},
+  lvl3D:{pt:"Grelha 5\u00D75 ou 6\u00D76, mais dedu\u00E7\u00E3o.",en:"5\u00D75 or 6\u00D76 grid, more deduction."},
+  placedOf:{pt:"colocados",en:"placed"}, ofW:{pt:"de",en:"of"}, elapsed:{pt:"decorridos",en:"elapsed"},
+  lastW:{pt:"\u00DAltimo:",en:"Last:"},
+  solvedStamp:{pt:"Resolvido",en:"Solved"}, openStamp:{pt:"Caso por fechar",en:"Case still open"},
+  timeW:{pt:"Tempo",en:"Time"}, hintsW:{pt:"Dicas",en:"Hints"}, sequenceW:{pt:"Sequ\u00EAncia",en:"Streak"},
+  newAch:{pt:"Nova conquista",en:"New achievement"},
+  fasterThan:{pt:"Mais r\u00E1pido que",en:"Faster than"}, ofCasesLevel:{pt:"dos casos deste n\u00EDvel",en:"of cases at this level"},
+  whereFailed:{pt:"Onde falhou",en:"Where it went wrong"},
+  seeScene:{pt:"Ver a cena",en:"See the scene"}, newCaseW:{pt:"Novo caso",en:"New case"},
+  hintsLabel:{pt:"dicas",en:"hints"}, sequenceReset:{pt:"Sequ\u00EAncia reposta",en:"Streak reset"},
+  accuracy:{pt:"Acerto",en:"Accuracy"}, bestTimeLvl:{pt:"Melhor tempo por n\u00EDvel",en:"Best time per level"},
+  last14:{pt:"\u00DAltimos 14 dias",en:"Last 14 days"}, achievements:{pt:"Conquistas",en:"Achievements"},
+  locked:{pt:"Bloqueada",en:"Locked"},
+  authSaves:{pt:"A tua conta guarda o progresso e a subscri\u00E7\u00E3o.",en:"Your account keeps your progress and subscription."},
+  cancel:{pt:"Cancelar",en:"Cancel"}, processing:{pt:"A processar\u2026",en:"Processing\u2026"},
+  fillEmailPass:{pt:"Preenche o email e a palavra-passe.",en:"Fill in your email and password."},
+  passwordPh:{pt:"Palavra-passe (m\u00EDn. 6)",en:"Password (min. 6)"},
+  errBadEmail:{pt:"Email inv\u00E1lido.",en:"Invalid email."}, errWeakPass:{pt:"Palavra-passe demasiado curta.",en:"Password too short."},
+  errTaken:{pt:"J\u00E1 existe conta com este email.",en:"An account with this email already exists."},
+  errBadCred:{pt:"Email ou palavra-passe errados.",en:"Wrong email or password."},
+  errNetwork:{pt:"Sem liga\u00E7\u00E3o ao servidor.",en:"No connection to the server."}, errGeneric:{pt:"Erro. Tenta de novo.",en:"Error. Try again."},
+  pwIntro:{pt:"Como convidado tens o <b>caso do dia</b> e <b>1 caso extra</b> por dia. Passa a Premium e joga <b>sem limites</b>.",en:"As a guest you get the <b>daily case</b> and <b>1 extra case</b> per day. Go Premium and play <b>without limits</b>."},
+  perMonth:{pt:" / m\u00EAs",en:" / month"},
+  unlimitedCancel:{pt:"Casos ilimitados \u00B7 cancela quando quiseres",en:"Unlimited cases \u00B7 cancel anytime"},
+  notNow:{pt:"Agora n\u00E3o",en:"Not now"}, subscribe:{pt:"Subscrever",en:"Subscribe"}, opening:{pt:"A abrir\u2026",en:"Opening\u2026"},
+  dailyClosed:{pt:"J\u00E1 encerraste o caso de hoje.",en:"You've already closed today's case."},
+  helloGoogle:{pt:"Ol\u00E1! Sess\u00E3o iniciada com Google.",en:"Hi! Signed in with Google."},
+  googleFail:{pt:"N\u00E3o foi poss\u00EDvel entrar com Google.",en:"Couldn't sign in with Google."},
+  fAll:{pt:"Todos",en:"All"}, fSolved:{pt:"Resolvidos",en:"Solved"}, fFailed:{pt:"Falhados",en:"Failed"},
+  archEmpty:{pt:"Ainda sem casos encerrados.<br>Resolve o primeiro e ele aparece aqui.",en:"No closed cases yet.<br>Solve your first and it shows up here."},
+  sSom:{pt:"Som",en:"Sound"}, sSomD:{pt:"Estalidos ao colocar pe\u00E7as",en:"Clicks when placing pieces"},
+  sVib:{pt:"Vibra\u00E7\u00E3o",en:"Vibration"}, sVibD:{pt:"Resposta t\u00E1til na acusa\u00E7\u00E3o",en:"Haptic feedback on accusation"},
+  sCro:{pt:"Cron\u00F3metro",en:"Timer"}, sCroD:{pt:"Mostrar o tempo durante o caso",en:"Show time during the case"},
+  sLem:{pt:"Lembrete di\u00E1rio",en:"Daily reminder"}, sLemD:{pt:"Todos os dias \u00E0s 21:00",en:"Every day at 9:00 PM"},
+  hintW:{pt:"Dica ",en:"Hint "}, errStart:{pt:"Erro ao iniciar.",en:"Couldn't start."},
+  todaysCase:{pt:"O caso de hoje",en:"Today's case"}, theCase:{pt:"O caso",en:"The case"},
+  happenedIn:{pt:"Passou-se ",en:"It happened "}, noneLeft:{pt:". Ningu\u00E9m saiu do edif\u00EDcio.",en:". No one left the building."},
+  daysW:{pt:"dia",en:"day"}, daysWp:{pt:"dias",en:"days"},
+  caseClosedTomorrow:{pt:"Caso encerrado \u00B7 volta amanh\u00E3",en:"Case closed \u00B7 come back tomorrow"},
+  startInvestigating:{pt:"Come\u00E7ar a investigar",en:"Start investigating"},
+  yourAvgTime:{pt:"O teu tempo m\u00E9dio: ",en:"Your average time: "}, noTimesYet:{pt:"Ainda sem tempos registados",en:"No times recorded yet"},
+  seqW:{pt:"Sequ\u00EAncia",en:"Streak"},
+};
+function U(k){ return tr(UI[k]); }
+// nível -> label traduzido
+function lvlName(l){ return [ "", U("easy"), U("medium"), U("hard") ][l]||""; }
+
 function mulberry32(seed){return function(){seed|=0;seed=(seed+0x6D2B79F5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
 function shuffle(a,rnd){for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function pick(a,rnd){return a[Math.floor(rnd()*a.length)];}
 
 const OCC=[".","c","r","b"], OCC_OBJ=["c","r","b"], BLOCK=["T","V","P","L","X"];
-const OBJ={
-  c:{name:"cadeira",det:"de",art:"uma",on:"numa cadeira"},
-  r:{name:"tapete",det:"de",art:"um",on:"num tapete"},
-  b:{name:"cama",det:"de",art:"uma",on:"numa cama"},
-  T:{name:"mesa",det:"de",art:"uma"},
-  V:{name:"televisão",det:"de",art:"uma"},
-  P:{name:"planta",det:"de",art:"uma"},
-  L:{name:"prateleira",det:"de",art:"uma"},
-  X:{name:"caixa",det:"de",art:"uma"},
+// Objetos do cenário, bilingues. PT usa det+art ("ao lado de uma cadeira"); EN usa a ("next to a chair").
+const OBJ_L={
+  pt:{
+    c:{name:"cadeira",det:"de",art:"uma",on:"numa cadeira"},
+    r:{name:"tapete",det:"de",art:"um",on:"num tapete"},
+    b:{name:"cama",det:"de",art:"uma",on:"numa cama"},
+    T:{name:"mesa",det:"de",art:"uma"},
+    V:{name:"televisão",det:"de",art:"uma"},
+    P:{name:"planta",det:"de",art:"uma"},
+    L:{name:"prateleira",det:"de",art:"uma"},
+    X:{name:"caixa",det:"de",art:"uma"},
+  },
+  en:{
+    c:{name:"chair",a:"a chair",on:"on a chair"},
+    r:{name:"rug",a:"a rug",on:"on a rug"},
+    b:{name:"bed",a:"a bed",on:"on a bed"},
+    T:{name:"table",a:"a table"},
+    V:{name:"television",a:"a television"},
+    P:{name:"plant",a:"a plant"},
+    L:{name:"shelf",a:"a shelf"},
+    X:{name:"crate",a:"a crate"},
+  }
+};
+const OBJ=new Proxy({},{get:(_,k)=>OBJ_L[LANG][k]});
+// Direções e conectores das pistas, por idioma
+const DIRW={ pt:{N:"norte",S:"sul",W:"oeste",E:"este"}, en:{N:"north",S:"south",W:"west",E:"east"} };
+// Frases das pistas (funções que montam o texto por idioma)
+const CLUE={
+  on:      (nm,o)=> LANG==="en" ? nm+" was "+OBJ[o].on+"."       : nm+" estava "+OBJ[o].on+".",
+  onNot:   (nm,o)=> LANG==="en" ? nm+" was not "+OBJ[o].on+"."   : nm+" não estava "+OBJ[o].on+".",
+  beside:  (nm,f)=> LANG==="en" ? nm+" was next to "+OBJ[f].a+"." : nm+" estava ao lado "+OBJ[f].det+" "+OBJ[f].art+" "+OBJ[f].name+".",
+  besideNot:(nm,f)=>LANG==="en" ? nm+" was not next to "+OBJ[f].a+"." : nm+" não estava ao lado "+OBJ[f].det+" "+OBJ[f].art+" "+OBJ[f].name+".",
+  window:  (nm)=> LANG==="en" ? nm+" was in front of a window."      : nm+" estava em frente a uma janela.",
+  windowNot:(nm)=>LANG==="en" ? nm+" was not in front of any window." : nm+" não estava em frente a nenhuma janela.",
+  card:    (nm1,d,nm2)=> LANG==="en" ? nm1+" was "+d+" of "+nm2+"." : nm1+" estava a "+d+" de "+nm2+".",
 };
 const isOcc=t=>OCC.indexOf(t)>=0, isBlock=t=>BLOCK.indexOf(t)>=0;
 
 const THEMES=[
-  {id:"cafetaria",title:"A Cafetaria",
+  {id:"cafetaria",title:"A Cafetaria",titleEN:"The Café",
    rooms:["no Bar","na Zona Principal","na Casa de Banho","na Esplanada","na Cozinha"],
-   shorts:["BAR","ZONA PRINCIPAL","CASA DE BANHO","ESPLANADA","COZINHA"],
+   roomsEN:["at the Bar","in the Main Area","in the Restroom","on the Terrace","in the Kitchen"],
+   shorts:["BAR","ZONA PRINCIPAL","CASA DE BANHO","ESPLANADA","COZINHA"], shortsEN:["BAR","MAIN AREA","RESTROOM","TERRACE","KITCHEN"],
    blocks:{T:[2,4],P:[1,2],X:[0,1],V:[0,1]}, occ:{c:0.7,r:0.3}, objDensity:0.45},
-  {id:"pizzaria",title:"A Pizzaria",
+  {id:"pizzaria",title:"A Pizzaria",titleEN:"The Pizzeria",
    rooms:["na Cozinha","no Salão","na Esplanada","na Entrada","na Adega"],
-   shorts:["COZINHA","SALÃO","ESPLANADA","ENTRADA","ADEGA"],
+   roomsEN:["in the Kitchen","in the Dining Room","on the Terrace","at the Entrance","in the Cellar"],
+   shorts:["COZINHA","SALÃO","ESPLANADA","ENTRADA","ADEGA"], shortsEN:["KITCHEN","DINING ROOM","TERRACE","ENTRANCE","CELLAR"],
    blocks:{T:[3,5],P:[1,2],X:[1,2]}, occ:{c:0.8,r:0.2}, objDensity:0.5},
-  {id:"mansao",title:"A Mansão",
+  {id:"mansao",title:"A Mansão",titleEN:"The Mansion",
    rooms:["na Biblioteca","no Salão Nobre","na Sala de Jantar","no Quarto","no Hall"],
-   shorts:["BIBLIOTECA","SALÃO NOBRE","SALA DE JANTAR","QUARTO","HALL"],
+   roomsEN:["in the Library","in the Grand Hall","in the Dining Room","in the Bedroom","in the Hall"],
+   shorts:["BIBLIOTECA","SALÃO NOBRE","SALA DE JANTAR","QUARTO","HALL"], shortsEN:["LIBRARY","GRAND HALL","DINING ROOM","BEDROOM","HALL"],
    blocks:{T:[1,2],L:[1,3],P:[1,2],V:[0,1]}, occ:{c:0.45,r:0.3,b:0.25}, objDensity:0.45},
-  {id:"hotel",title:"O Hotel",
+  {id:"hotel",title:"O Hotel",titleEN:"The Hotel",
    rooms:["na Receção","no Quarto","no Restaurante","no Lobby","na Suite"],
-   shorts:["RECEÇÃO","QUARTO","RESTAURANTE","LOBBY","SUITE"],
+   roomsEN:["at Reception","in the Room","in the Restaurant","in the Lobby","in the Suite"],
+   shorts:["RECEÇÃO","QUARTO","RESTAURANTE","LOBBY","SUITE"], shortsEN:["RECEPTION","ROOM","RESTAURANT","LOBBY","SUITE"],
    blocks:{T:[1,3],P:[1,2],V:[1,2],X:[0,1]}, occ:{c:0.4,r:0.25,b:0.35}, objDensity:0.5},
-  {id:"escritorio",title:"O Escritório",
+  {id:"escritorio",title:"O Escritório",titleEN:"The Office",
    rooms:["na Sala de Reuniões","no Open Space","na Copa","na Receção","no Arquivo"],
-   shorts:["REUNIÕES","OPEN SPACE","COPA","RECEÇÃO","ARQUIVO"],
+   roomsEN:["in the Meeting Room","in the Open Space","in the Kitchenette","at Reception","in the Archive"],
+   shorts:["REUNIÕES","OPEN SPACE","COPA","RECEÇÃO","ARQUIVO"], shortsEN:["MEETINGS","OPEN SPACE","KITCHENETTE","RECEPTION","ARCHIVE"],
    blocks:{T:[2,4],L:[1,2],P:[1,2],X:[1,2]}, occ:{c:0.85,r:0.15}, objDensity:0.5},
-  {id:"quinta",title:"A Quinta",
+  {id:"quinta",title:"A Quinta",titleEN:"The Farm",
    rooms:["na Casa","no Celeiro","no Alpendre","no Curral","na Despensa"],
-   shorts:["CASA","CELEIRO","ALPENDRE","CURRAL","DESPENSA"],
+   roomsEN:["in the House","in the Barn","on the Porch","in the Corral","in the Pantry"],
+   shorts:["CASA","CELEIRO","ALPENDRE","CURRAL","DESPENSA"], shortsEN:["HOUSE","BARN","PORCH","CORRAL","PANTRY"],
    blocks:{T:[1,2],P:[2,4],X:[1,2],L:[0,1]}, occ:{c:0.5,r:0.35,b:0.15}, objDensity:0.4},
 ];
 
@@ -617,77 +760,85 @@ const INTROS=[
    ========================================================= */
 const CASE_THEMES=[
   {
-    key:"homicidio", emoji:"\uD83D\uDD2A", targetT:"a vítima", culprit:"o culpado", culpTag:"O CULPADO",
-    action:"Acusar",
+    key:"homicidio", emoji:"\uD83D\uDD2A",
+    targetT:{pt:"a vítima",en:"the victim"}, culprit:{pt:"o culpado",en:"the culprit"}, culpTag:{pt:"O CULPADO",en:"THE CULPRIT"},
+    action:{pt:"Acusar",en:"Accuse"},
     names:["Lindsey","Vander","Osório","Fátima","Quim","Rosa","Alfredo","Núria","Teodoro","Cristina"],
     intros:[
-      "{T} foi encontrada sem vida. Reconstrói a cena e vê quem não devia lá estar.",
-      "Um crime, uma sala fechada e várias versões. Só a lógica aponta o responsável.",
+      {pt:"{T} foi encontrada sem vida. Reconstrói a cena e vê quem não devia lá estar.",en:"{T} was found dead. Reconstruct the scene and see who shouldn't have been there."},
+      {pt:"Um crime, uma sala fechada e várias versões. Só a lógica aponta o responsável.",en:"A crime, a locked room and many stories. Only logic points to who's responsible."},
     ],
-    objective:"Reconstruir a cena e chegar a <b>quem partilhou a divisão com {T}</b>.",
-    withPhrase:(t,room)=>"ficou sozinho com "+t+" na <b>"+room+"</b>",
-    accuseQ:(room)=>"A cena aconteceu na <b>"+room+"</b>. Aponta quem estava <b>sozinho ali</b>.",
-    winLine:(kn,t,room)=>"Certo. <b>"+kn+"</b> foi o único que ficou com "+t+" na <b>"+room+"</b>. Caso encerrado.",
-    loseLine:(acc,kn,t,room)=>"Acusaste <b>"+acc+"</b>, mas quem ficou com "+t+" na <b>"+room+"</b> era <b>"+kn+"</b>.",
+    objective:{pt:"Reconstruir a cena e chegar a <b>quem partilhou a divisão com {T}</b>.",en:"Reconstruct the scene and find <b>who shared the room with {T}</b>."},
+    accuseQ:(room)=> LANG==="en" ? "The scene was in the <b>"+room+"</b>. Point to whoever was <b>alone there</b>." : "A cena aconteceu na <b>"+room+"</b>. Aponta quem estava <b>sozinho ali</b>.",
+    winLine:(kn,t,room)=> LANG==="en" ? "Correct. <b>"+kn+"</b> was the only one with "+t+" in the <b>"+room+"</b>. Case closed." : "Certo. <b>"+kn+"</b> foi o único que ficou com "+t+" na <b>"+room+"</b>. Caso encerrado.",
+    loseLine:(acc,kn,t,room)=> LANG==="en" ? "You accused <b>"+acc+"</b>, but whoever stayed with "+t+" in the <b>"+room+"</b> was <b>"+kn+"</b>." : "Acusaste <b>"+acc+"</b>, mas quem ficou com "+t+" na <b>"+room+"</b> era <b>"+kn+"</b>.",
   },
   {
-    key:"espionagem", emoji:"\uD83D\uDD75\uFE0F", targetT:"o dossiê", culprit:"a toupeira", culpTag:"A TOUPEIRA",
-    action:"Expor",
+    key:"espionagem", emoji:"\uD83D\uDD75\uFE0F",
+    targetT:{pt:"o dossiê",en:"the dossier"}, culprit:{pt:"a toupeira",en:"the mole"}, culpTag:{pt:"A TOUPEIRA",en:"THE MOLE"},
+    action:{pt:"Expor",en:"Expose"},
     names:["o Dossiê Vermelho","o Ficheiro X","o Microfilme","o Cofre de Dados","a Pasta Selada","o Telegrama","o Plano Zero","a Chave Morta"],
+    namesEN:["the Red Dossier","File X","the Microfilm","the Data Vault","the Sealed Folder","the Telegram","Plan Zero","the Dead Key"],
     intros:[
-      "Só uma pessoa teve acesso a {T}. Reconstrói a noite e desmascara a toupeira.",
-      "Há um infiltrado na equipa. As posições não mentem — descobre quem esteve onde não devia.",
+      {pt:"Só uma pessoa teve acesso a {T}. Reconstrói a noite e desmascara a toupeira.",en:"Only one person had access to {T}. Reconstruct the night and unmask the mole."},
+      {pt:"Há um infiltrado na equipa. As posições não mentem — descobre quem esteve onde não devia.",en:"There's an infiltrator on the team. Positions don't lie — find who was where they shouldn't."},
     ],
-    objective:"Descobrir <b>quem ficou sozinho com {T}</b> \u2014 essa pessoa é a toupeira.",
-    withPhrase:(t,room)=>"esteve com "+t+" na <b>"+room+"</b>",
-    accuseQ:(room)=>"O acesso deu-se na <b>"+room+"</b>. Aponta quem lá esteve <b>sozinho</b>.",
-    winLine:(kn,t,room)=>"Exposta. <b>"+kn+"</b> foi a única a ficar com "+t+" na <b>"+room+"</b>. Caso fechado.",
-    loseLine:(acc,kn,t,room)=>"Apontaste <b>"+acc+"</b>, mas quem ficou com "+t+" na <b>"+room+"</b> era <b>"+kn+"</b>.",
+    objective:{pt:"Descobrir <b>quem ficou sozinho com {T}</b> \u2014 essa pessoa é a toupeira.",en:"Find <b>who was alone with {T}</b> \u2014 that person is the mole."},
+    accuseQ:(room)=> LANG==="en" ? "The access happened in the <b>"+room+"</b>. Point to who was <b>alone</b> there." : "O acesso deu-se na <b>"+room+"</b>. Aponta quem lá esteve <b>sozinho</b>.",
+    winLine:(kn,t,room)=> LANG==="en" ? "Exposed. <b>"+kn+"</b> was the only one with "+t+" in the <b>"+room+"</b>. Case closed." : "Exposta. <b>"+kn+"</b> foi a única a ficar com "+t+" na <b>"+room+"</b>. Caso fechado.",
+    loseLine:(acc,kn,t,room)=> LANG==="en" ? "You pointed at <b>"+acc+"</b>, but whoever stayed with "+t+" in the <b>"+room+"</b> was <b>"+kn+"</b>." : "Apontaste <b>"+acc+"</b>, mas quem ficou com "+t+" na <b>"+room+"</b> era <b>"+kn+"</b>.",
   },
   {
-    key:"roubo", emoji:"\uD83D\uDCB0", targetT:"o cofre", culprit:"o cúmplice", culpTag:"O CÚMPLICE",
-    action:"Denunciar",
+    key:"roubo", emoji:"\uD83D\uDCB0",
+    targetT:{pt:"o cofre",en:"the safe"}, culprit:{pt:"o cúmplice",en:"the accomplice"}, culpTag:{pt:"O CÚMPLICE",en:"THE ACCOMPLICE"},
+    action:{pt:"Denunciar",en:"Report"},
     names:["o Cofre","a Caixa-Forte","o Saco do Dinheiro","o Estojo de Joias","o Malote","o Cofre Antigo","a Gaveta Secreta","o Baú"],
+    namesEN:["the Safe","the Vault","the Money Bag","the Jewel Case","the Pouch","the Old Safe","the Secret Drawer","the Chest"],
     intros:[
-      "Alguém deixou o caminho livre até {T}. Reconstrói a noite e denuncia o cúmplice.",
-      "O assalto foi por dentro. Descobre quem ficou junto ao alvo quando ninguém via.",
+      {pt:"Alguém deixou o caminho livre até {T}. Reconstrói a noite e denuncia o cúmplice.",en:"Someone cleared the path to {T}. Reconstruct the night and report the accomplice."},
+      {pt:"O assalto foi por dentro. Descobre quem ficou junto ao alvo quando ninguém via.",en:"It was an inside job. Find who stayed near the target when no one was looking."},
     ],
-    objective:"Apanhar <b>quem ficou sozinho com {T}</b> \u2014 esse é o cúmplice.",
-    withPhrase:(t,room)=>"ficou sozinho com "+t+" na <b>"+room+"</b>",
-    accuseQ:(room)=>"O golpe foi na <b>"+room+"</b>. Aponta quem estava <b>sozinho ali</b>.",
-    winLine:(kn,t,room)=>"Apanhado. <b>"+kn+"</b> foi o único a ficar com "+t+" na <b>"+room+"</b>. Caso resolvido.",
-    loseLine:(acc,kn,t,room)=>"Denunciaste <b>"+acc+"</b>, mas quem ficou com "+t+" na <b>"+room+"</b> era <b>"+kn+"</b>.",
+    objective:{pt:"Apanhar <b>quem ficou sozinho com {T}</b> \u2014 esse é o cúmplice.",en:"Catch <b>who was alone with {T}</b> \u2014 that's the accomplice."},
+    accuseQ:(room)=> LANG==="en" ? "The heist was in the <b>"+room+"</b>. Point to who was <b>alone there</b>." : "O golpe foi na <b>"+room+"</b>. Aponta quem estava <b>sozinho ali</b>.",
+    winLine:(kn,t,room)=> LANG==="en" ? "Caught. <b>"+kn+"</b> was the only one with "+t+" in the <b>"+room+"</b>. Case solved." : "Apanhado. <b>"+kn+"</b> foi o único a ficar com "+t+" na <b>"+room+"</b>. Caso resolvido.",
+    loseLine:(acc,kn,t,room)=> LANG==="en" ? "You reported <b>"+acc+"</b>, but whoever stayed with "+t+" in the <b>"+room+"</b> was <b>"+kn+"</b>." : "Denunciaste <b>"+acc+"</b>, mas quem ficou com "+t+" na <b>"+room+"</b> era <b>"+kn+"</b>.",
   },
   {
-    key:"arte", emoji:"\uD83D\uDDBC\uFE0F", targetT:"o quadro", culprit:"o intruso", culpTag:"O INTRUSO",
-    action:"Apontar",
+    key:"arte", emoji:"\uD83D\uDDBC\uFE0F",
+    targetT:{pt:"o quadro",en:"the painting"}, culprit:{pt:"o intruso",en:"the intruder"}, culpTag:{pt:"O INTRUSO",en:"THE INTRUDER"},
+    action:{pt:"Apontar",en:"Point out"},
     names:["o Quadro","a Tela Roubada","a Escultura","o Retrato Antigo","a Peça Rara","a Miniatura","o Vaso Ming","a Relíquia"],
+    namesEN:["the Painting","the Stolen Canvas","the Sculpture","the Old Portrait","the Rare Piece","the Miniature","the Ming Vase","the Relic"],
     intros:[
-      "{T} desapareceu do museu. Reconstrói a ronda e vê que guarda estava na sala errada.",
-      "A obra sumiu sem alarme. Só alguém de dentro podia — descobre quem.",
+      {pt:"{T} desapareceu do museu. Reconstrói a ronda e vê que guarda estava na sala errada.",en:"{T} vanished from the museum. Reconstruct the rounds and see which guard was in the wrong room."},
+      {pt:"A obra sumiu sem alarme. Só alguém de dentro podia — descobre quem.",en:"The artwork vanished without an alarm. Only an insider could — find who."},
     ],
-    objective:"Descobrir <b>quem esteve sozinho com {T}</b> quando desapareceu.",
-    withPhrase:(t,room)=>"estava com "+t+" na <b>"+room+"</b>",
-    accuseQ:(room)=>"A obra estava na <b>"+room+"</b>. Aponta quem lá estava <b>sozinho</b>.",
-    winLine:(kn,t,room)=>"Resolvido. <b>"+kn+"</b> foi o único com "+t+" na <b>"+room+"</b>. Obra recuperada.",
-    loseLine:(acc,kn,t,room)=>"Apontaste <b>"+acc+"</b>, mas quem estava com "+t+" na <b>"+room+"</b> era <b>"+kn+"</b>.",
+    objective:{pt:"Descobrir <b>quem esteve sozinho com {T}</b> quando desapareceu.",en:"Find <b>who was alone with {T}</b> when it vanished."},
+    accuseQ:(room)=> LANG==="en" ? "The artwork was in the <b>"+room+"</b>. Point to who was <b>alone</b> there." : "A obra estava na <b>"+room+"</b>. Aponta quem lá estava <b>sozinho</b>.",
+    winLine:(kn,t,room)=> LANG==="en" ? "Solved. <b>"+kn+"</b> was the only one with "+t+" in the <b>"+room+"</b>. Artwork recovered." : "Resolvido. <b>"+kn+"</b> foi o único com "+t+" na <b>"+room+"</b>. Obra recuperada.",
+    loseLine:(acc,kn,t,room)=> LANG==="en" ? "You pointed at <b>"+acc+"</b>, but whoever was with "+t+" in the <b>"+room+"</b> was <b>"+kn+"</b>." : "Apontaste <b>"+acc+"</b>, mas quem estava com "+t+" na <b>"+room+"</b> era <b>"+kn+"</b>.",
   },
   {
-    key:"fantasma", emoji:"\uD83D\uDC7B", targetT:"a aparição", culprit:"a testemunha", culpTag:"A TESTEMUNHA",
-    action:"Revelar",
+    key:"fantasma", emoji:"\uD83D\uDC7B",
+    targetT:{pt:"a aparição",en:"the apparition"}, culprit:{pt:"a testemunha",en:"the witness"}, culpTag:{pt:"A TESTEMUNHA",en:"THE WITNESS"},
+    action:{pt:"Revelar",en:"Reveal"},
     names:["a Aparição","o Vulto","a Sombra","o Espírito","a Assombração","o Fantasma","a Presença","o Espectro"],
+    namesEN:["the Apparition","the Figure","the Shadow","the Spirit","the Haunting","the Ghost","the Presence","the Specter"],
     intros:[
-      "Só uma pessoa cruzou o caminho de {T}. Reconstrói a noite e revela a testemunha.",
-      "Algo se moveu na casa. Descobre quem estava na sala quando aconteceu.",
+      {pt:"Só uma pessoa cruzou o caminho de {T}. Reconstrói a noite e revela a testemunha.",en:"Only one person crossed paths with {T}. Reconstruct the night and reveal the witness."},
+      {pt:"Algo se moveu na casa. Descobre quem estava na sala quando aconteceu.",en:"Something moved in the house. Find who was in the room when it happened."},
     ],
-    objective:"Descobrir <b>quem ficou sozinho com {T}</b> — a única testemunha.",
-    withPhrase:(t,room)=>"cruzou "+t+" na <b>"+room+"</b>",
-    accuseQ:(room)=>"Aconteceu na <b>"+room+"</b>. Aponta quem lá estava <b>sozinho</b>.",
-    winLine:(kn,t,room)=>"Revelado. <b>"+kn+"</b> foi o único a cruzar "+t+" na <b>"+room+"</b>. Mistério esclarecido.",
-    loseLine:(acc,kn,t,room)=>"Apontaste <b>"+acc+"</b>, mas quem cruzou "+t+" na <b>"+room+"</b> foi <b>"+kn+"</b>.",
+    objective:{pt:"Descobrir <b>quem ficou sozinho com {T}</b> — a única testemunha.",en:"Find <b>who was alone with {T}</b> — the only witness."},
+    accuseQ:(room)=> LANG==="en" ? "It happened in the <b>"+room+"</b>. Point to who was <b>alone</b> there." : "Aconteceu na <b>"+room+"</b>. Aponta quem lá estava <b>sozinho</b>.",
+    winLine:(kn,t,room)=> LANG==="en" ? "Revealed. <b>"+kn+"</b> was the only one to cross "+t+" in the <b>"+room+"</b>. Mystery solved." : "Revelado. <b>"+kn+"</b> foi o único a cruzar "+t+" na <b>"+room+"</b>. Mistério esclarecido.",
+    loseLine:(acc,kn,t,room)=> LANG==="en" ? "You pointed at <b>"+acc+"</b>, but whoever crossed "+t+" in the <b>"+room+"</b> was <b>"+kn+"</b>." : "Apontaste <b>"+acc+"</b>, mas quem cruzou "+t+" na <b>"+room+"</b> foi <b>"+kn+"</b>.",
   },
 ];
 function pickTheme(seed){return CASE_THEMES[Math.abs(seed)%CASE_THEMES.length];}
+// Nome do alvo por idioma (homicidio usa nomes de pessoas iguais nos dois idiomas)
+function themeName(theme,idx){ const arr=(LANG==="en"&&theme.namesEN)?theme.namesEN:theme.names; return arr[idx%arr.length]; }
+function victimName(){ return themeName(G._theme,G._victimIdx||0); }
+function themeIntro(){ return tr(G._theme.intros[G._introIdx||0]).replace(/{T}/g,victimName()); }
 const ROOMVARS=["--room-0","--room-1","--room-2","--room-3","--room-4","--room-5","--room-6"];
 const PALETTES=[
   {name:"Lilás",bgTop:"#cfc6e0",bgBot:"#b3a6cf",rooms:["#b9a9c9","#cdc0dc","#a894bb","#c3b2d3","#b0a0c4","#c7bad9","#ab98c0"]},
@@ -719,7 +870,10 @@ function besideCells(L,r,c){
 function besideObjects(L,r,c){const s=new Set();for(const[nr,nc]of besideCells(L,r,c)){const t=L.t[nr][nc];if(isBlock(t))s.add(t);}return s;}
 function windowCells(w,G){const o=[[w.r,w.c]];if(w.side==="top"&&w.r>0)o.push([w.r-1,w.c]);if(w.side==="left"&&w.c>0)o.push([w.r,w.c-1]);return o;}
 function cellHasWindow(L,r,c){return L.windows.some(w=>windowCells(w,L.G).some(([a,b])=>a===r&&b===c));}
-function ordF(n){const w=["","primeira","segunda","terceira","quarta","quinta","sexta","sétima"];return w[n]||(n+"ª");}
+function ordF(n){
+  if(LANG==="en"){const w=["","first","second","third","fourth","fifth","sixth","seventh"];return w[n]||(n+"th");}
+  const w=["","primeira","segunda","terceira","quarta","quinta","sexta","sétima"];return w[n]||(n+"ª");
+}
 
 /* ---------- divisões e objetos ---------- */
 function buildRooms(G,n,rnd){
@@ -812,30 +966,34 @@ function buildClues(L,cells,sol,rnd,level){
   const S=sol.length,clues=[],pos=p=>cells[sol[p]];
   for(let p=0;p<S;p++){
     const[r,c]=pos(p),area=L.a[r][c],obj=L.t[r][c];
-    clues.push({p,kind:"area",test:a=>a[p]<0?undefined:L.a[cells[a[p]][0]][cells[a[p]][1]]===area,text:nm=>nm[p]+" estava "+L.rooms[area].name+"."});
-    clues.push({p,kind:"row",test:a=>a[p]<0?undefined:cells[a[p]][0]===r,text:nm=>nm[p]+" estava na "+ordF(r+1)+" fila."});
-    clues.push({p,kind:"col",test:a=>a[p]<0?undefined:cells[a[p]][1]===c,text:nm=>nm[p]+" estava na "+ordF(c+1)+" coluna."});
-    if(obj!==".")clues.push({p,kind:"on",test:a=>a[p]<0?undefined:L.t[cells[a[p]][0]][cells[a[p]][1]]===obj,text:nm=>nm[p]+" estava "+OBJ[obj].on+"."});
+    clues.push({p,kind:"area",test:a=>a[p]<0?undefined:L.a[cells[a[p]][0]][cells[a[p]][1]]===area,text:nm=>roomPhrase(nm[p],L.rooms[area])});
+    clues.push({p,kind:"row",test:a=>a[p]<0?undefined:cells[a[p]][0]===r,text:nm=>rowPhrase(nm[p],r+1)});
+    clues.push({p,kind:"col",test:a=>a[p]<0?undefined:cells[a[p]][1]===c,text:nm=>colPhrase(nm[p],c+1)});
+    if(obj!==".")clues.push({p,kind:"on",test:a=>a[p]<0?undefined:L.t[cells[a[p]][0]][cells[a[p]][1]]===obj,text:nm=>CLUE.on(nm[p],obj)});
     if(level>=2)for(const o of OCC_OBJ){if(o!==obj&&L.t.some(row=>row.indexOf(o)>=0))
-      clues.push({p,kind:"on-",test:a=>a[p]<0?undefined:L.t[cells[a[p]][0]][cells[a[p]][1]]!==o,text:nm=>nm[p]+" não estava "+OBJ[o].on+"."});}
+      clues.push({p,kind:"on-",test:a=>a[p]<0?undefined:L.t[cells[a[p]][0]][cells[a[p]][1]]!==o,text:nm=>CLUE.onNot(nm[p],o)});}
     const bs=besideObjects(L,r,c);
-    for(const f of bs)clues.push({p,kind:"beside",test:a=>a[p]<0?undefined:besideObjects(L,cells[a[p]][0],cells[a[p]][1]).has(f),text:nm=>nm[p]+" estava ao lado "+OBJ[f].det+" "+OBJ[f].art+" "+OBJ[f].name+"."});
+    for(const f of bs)clues.push({p,kind:"beside",test:a=>a[p]<0?undefined:besideObjects(L,cells[a[p]][0],cells[a[p]][1]).has(f),text:nm=>CLUE.beside(nm[p],f)});
     if(level>=2)for(const f of BLOCK){if(!bs.has(f)&&L.t.some(row=>row.indexOf(f)>=0))
-      clues.push({p,kind:"beside-",test:a=>a[p]<0?undefined:!besideObjects(L,cells[a[p]][0],cells[a[p]][1]).has(f),text:nm=>nm[p]+" não estava ao lado "+OBJ[f].det+" "+OBJ[f].art+" "+OBJ[f].name+"."});}
-    if(cellHasWindow(L,r,c))clues.push({p,kind:"window",test:a=>a[p]<0?undefined:cellHasWindow(L,cells[a[p]][0],cells[a[p]][1]),text:nm=>nm[p]+" estava em frente a uma janela."});
-    else if(level>=2&&L.windows.length)clues.push({p,kind:"window-",test:a=>a[p]<0?undefined:!cellHasWindow(L,cells[a[p]][0],cells[a[p]][1]),text:nm=>nm[p]+" não estava em frente a nenhuma janela."});
+      clues.push({p,kind:"beside-",test:a=>a[p]<0?undefined:!besideObjects(L,cells[a[p]][0],cells[a[p]][1]).has(f),text:nm=>CLUE.besideNot(nm[p],f)});}
+    if(cellHasWindow(L,r,c))clues.push({p,kind:"window",test:a=>a[p]<0?undefined:cellHasWindow(L,cells[a[p]][0],cells[a[p]][1]),text:nm=>CLUE.window(nm[p])});
+    else if(level>=2&&L.windows.length)clues.push({p,kind:"window-",test:a=>a[p]<0?undefined:!cellHasWindow(L,cells[a[p]][0],cells[a[p]][1]),text:nm=>CLUE.windowNot(nm[p])});
     if(level>=2)for(let q=0;q<S;q++){
       if(q===p)continue;const[qr,qc]=pos(q),rels=[];
-      if(r<qr)rels.push(["norte",a=>cells[a[p]][0]<cells[a[q]][0]]);
-      if(r>qr)rels.push(["sul",a=>cells[a[p]][0]>cells[a[q]][0]]);
-      if(c<qc)rels.push(["oeste",a=>cells[a[p]][1]<cells[a[q]][1]]);
-      if(c>qc)rels.push(["este",a=>cells[a[p]][1]>cells[a[q]][1]]);
+      if(r<qr)rels.push(["N",a=>cells[a[p]][0]<cells[a[q]][0]]);
+      if(r>qr)rels.push(["S",a=>cells[a[p]][0]>cells[a[q]][0]]);
+      if(c<qc)rels.push(["W",a=>cells[a[p]][1]<cells[a[q]][1]]);
+      if(c>qc)rels.push(["E",a=>cells[a[p]][1]>cells[a[q]][1]]);
       if(rels.length){const[d,fn]=pick(rels,rnd);
-        clues.push({p,pair:[p,q],kind:"card",test:a=>(a[p]<0||a[q]<0)?undefined:fn(a),text:nm=>nm[p]+" estava a "+d+" de "+nm[q]+"."});}
+        clues.push({p,pair:[p,q],kind:"card",test:a=>(a[p]<0||a[q]<0)?undefined:fn(a),text:nm=>CLUE.card(nm[p],DIRW[LANG][d],nm[q])});}
     }
   }
   return shuffle(clues,rnd);
 }
+// Frases dependentes de sala/fila/coluna, bilingues
+function roomPhrase(nm,room){ const rn=tr(room.name); return LANG==="en" ? nm+" was "+rn+"." : nm+" estava "+rn+"."; }
+function rowPhrase(nm,n){ return LANG==="en" ? nm+" was in the "+ordF(n)+" row." : nm+" estava na "+ordF(n)+" fila."; }
+function colPhrase(nm,n){ return LANG==="en" ? nm+" was in the "+ordF(n)+" column." : nm+" estava na "+ordF(n)+" coluna."; }
 
 /* ---------- GERADOR ---------- */
 function gridForLevel(level,rnd){const R={1:[4,4],2:[5,5],3:[5,6]}[level]||[5,5];return R[0]+Math.floor(rnd()*(R[1]-R[0]+1));}
@@ -852,8 +1010,8 @@ function generate(seed,opts){
   const t=placeObjects(G,a,theme,mulberry32(seed+555));
   const windows=buildWindows(G,a,mulberry32(seed+777),1+Math.floor(mulberry32(seed+13)()*2));
   const order=shuffle([...theme.rooms.keys()],mulberry32(seed+31)).slice(0,nRooms);
-  const rooms=order.map(i=>({name:theme.rooms[i],short:theme.shorts[i]}));
-  const L={G,a,t,windows,rooms,theme:theme.id,name:theme.title};
+  const rooms=order.map(i=>({name:{pt:theme.rooms[i],en:(theme.roomsEN?theme.roomsEN[i]:theme.rooms[i])},short:{pt:theme.shorts[i],en:(theme.shortsEN?theme.shortsEN[i]:theme.shorts[i])}}));
+  const L={G,a,t,windows,rooms,theme:theme.id,name:{pt:theme.title,en:(theme.titleEN||theme.title)}};
   const cells=[];for(let r=0;r<G;r++)for(let c=0;c<G;c++)if(isOcc(t[r][c]))cells.push([r,c]);
   if(cells.length<G)return generate(seed+1,Object.assign({},opts,{_d:depth+1}));
   const all=solve(L,cells,[],S,300);
@@ -969,8 +1127,8 @@ async function doLogin(email,password){
 }
 async function doGoogle(credential){
   const r=await api("/auth/google",{method:"POST",body:{credential}});
-  if(r.ok){saveTok(r.data.token);ACCOUNT.state=r.data.state;$("authVeil").classList.remove("on");renderHome();toast("Ol\u00E1! Sess\u00E3o iniciada com Google.");}
-  else{toast("N\u00E3o foi poss\u00EDvel entrar com Google.");}
+  if(r.ok){saveTok(r.data.token);ACCOUNT.state=r.data.state;$("authVeil").classList.remove("on");renderHome();toast(U("helloGoogle"));}
+  else{toast(U("googleFail"));}
   return r;
 }
 // Carrega a biblioteca do Google uma vez.
@@ -1007,15 +1165,15 @@ async function openPortal(){
 }
 
 const ACHS=[
-  {id:"first", ic:"1", t:"Primeiro caso",  d:"Resolve o teu primeiro caso.",      test:()=>S.solvedCount>=1},
-  {id:"fast",  ic:"\u23F1", t:"Sob 2 min", d:"Encerra um caso em menos de 2:00.", test:()=>S.hist.some(h=>h.ok&&h.t>0&&h.t<120)},
-  {id:"nohint",ic:"\u2605", t:"Sem dicas \u00D75", d:"Cinco casos seguidos sem pedir dicas.", test:()=>S.nohintRun>=5},
-  {id:"ten",   ic:"10", t:"Dez casos",     d:"Resolve dez casos.",                test:()=>S.solvedCount>=10},
-  {id:"hard",  ic:"3", t:"N\u00EDvel dif\u00EDcil", d:"Resolve um caso no n\u00EDvel Dif\u00EDcil.", test:()=>S.hist.some(h=>h.ok&&h.level===3)},
-  {id:"week",  ic:"7", t:"Semana cheia",   d:"Sete dias seguidos de caso di\u00E1rio.", test:()=>S.streak>=7},
-  {id:"flaw",  ic:"\u2713", t:"Cinco certos", d:"Cinco acusa\u00E7\u00F5es certas seguidas.", test:()=>S.winStreak>=5},
-  {id:"daily5",ic:"\u25A4", t:"Cinco di\u00E1rios", d:"Resolve cinco casos di\u00E1rios.", test:()=>S.hist.filter(h=>h.ok&&h.daily).length>=5},
-  {id:"forty", ic:"40", t:"Quarenta casos", d:"Resolve quarenta casos.",           test:()=>S.solvedCount>=40}
+  {id:"first", ic:"1", t:{pt:"Primeiro caso",en:"First case"},  d:{pt:"Resolve o teu primeiro caso.",en:"Solve your first case."},      test:()=>S.solvedCount>=1},
+  {id:"fast",  ic:"\u23F1", t:{pt:"Sob 2 min",en:"Under 2 min"}, d:{pt:"Encerra um caso em menos de 2:00.",en:"Close a case in under 2:00."}, test:()=>S.hist.some(h=>h.ok&&h.t>0&&h.t<120)},
+  {id:"nohint",ic:"\u2605", t:{pt:"Sem dicas \u00D75",en:"No hints \u00D75"}, d:{pt:"Cinco casos seguidos sem pedir dicas.",en:"Five cases in a row without hints."}, test:()=>S.nohintRun>=5},
+  {id:"ten",   ic:"10", t:{pt:"Dez casos",en:"Ten cases"},     d:{pt:"Resolve dez casos.",en:"Solve ten cases."},                test:()=>S.solvedCount>=10},
+  {id:"hard",  ic:"3", t:{pt:"N\u00EDvel dif\u00EDcil",en:"Hard level"}, d:{pt:"Resolve um caso no n\u00EDvel Dif\u00EDcil.",en:"Solve a case on Hard."}, test:()=>S.hist.some(h=>h.ok&&h.level===3)},
+  {id:"week",  ic:"7", t:{pt:"Semana cheia",en:"Full week"},   d:{pt:"Sete dias seguidos de caso di\u00E1rio.",en:"Seven days of daily cases in a row."}, test:()=>S.streak>=7},
+  {id:"flaw",  ic:"\u2713", t:{pt:"Cinco certos",en:"Five correct"}, d:{pt:"Cinco acusa\u00E7\u00F5es certas seguidas.",en:"Five correct accusations in a row."}, test:()=>S.winStreak>=5},
+  {id:"daily5",ic:"\u25A4", t:{pt:"Cinco di\u00E1rios",en:"Five dailies"}, d:{pt:"Resolve cinco casos di\u00E1rios.",en:"Solve five daily cases."}, test:()=>S.hist.filter(h=>h.ok&&h.daily).length>=5},
+  {id:"forty", ic:"40", t:{pt:"Quarenta casos",en:"Forty cases"}, d:{pt:"Resolve quarenta casos.",en:"Solve forty cases."},           test:()=>S.solvedCount>=40}
 ];
 function checkAchs(){const got=[];for(const a of ACHS){if(S.achs.indexOf(a.id)<0&&a.test()){S.achs.push(a.id);got.push(a);}}return got;}
 
@@ -1070,17 +1228,32 @@ const TABS=[
   {id:"settings",lb:"Ajustes",svg:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>'}
 ];
 let screen="home";
+const TABLB={home:"casos",daily:"diario",stats:"registo",archive:"arquivo",settings:"ajustes"};
 function buildTabs(){
   ["tabs1","tabs2","tabs3","tabs4","tabs5"].forEach(hostId=>{
     const host=$(hostId);if(!host)return;host.innerHTML="";
     for(const t of TABS){
       const b=document.createElement("button");
       b.className="tab"+(t.id===screen?" on":"");
-      b.innerHTML='<svg viewBox="0 0 24 24">'+t.svg+'</svg><span>'+t.lb+'</span>';
+      b.innerHTML='<svg viewBox="0 0 24 24">'+t.svg+'</svg><span>'+U(TABLB[t.id]||"casos")+'</span>';
       b.onclick=()=>go(t.id);
       host.appendChild(b);
     }
   });
+}
+// Aplica o idioma atual: atualiza elementos estáticos e re-renderiza o ecrã visível.
+function applyLang(){
+  try{ document.documentElement.setAttribute("lang", LANG); }catch(e){}
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ const k=el.dataset.i18n; if(UI[k]) el.textContent=U(k); });
+  buildTabs();
+  // re-render do ecrã ativo
+  if(screen==="home")renderHome();
+  else if(screen==="daily")renderDaily&&renderDaily();
+  else if(screen==="stats")renderStats&&renderStats();
+  else if(screen==="archive")renderArchive&&renderArchive();
+  else if(screen==="settings")renderSettings&&renderSettings();
+  // se houver caso aberto, re-render do tabuleiro (pistas, botões)
+  if(G&&screen==="board"){ if(typeof updateBar==="function")updateBar(); render&&render(); }
 }
 function go(id){
   screen=id;
@@ -1110,8 +1283,8 @@ function newCase(seed,daily){
   for(let i=0;i<G.S;i++){nameMap[idxs[i]]=nm[i%nm.length];pawnMap[idxs[i]]=pc[i%pc.length];}
   const rnd2=mulberry32(G.seed+5);
   G._theme=pickTheme(G.seed);
-  G._victim=G._theme.names[Math.floor(rnd2()*G._theme.names.length)];
-  G._intro=G._theme.intros[Math.floor(rnd2()*G._theme.intros.length)].replace(/{T}/g,G._victim);
+  G._victimIdx=Math.floor(rnd2()*G._theme.names.length);
+  G._introIdx=Math.floor(rnd2()*G._theme.intros.length);
   G._portraitSeed=idxs.map((_,i)=>((G.seed>>>0)*31+i*2654435761)>>>0);
   placement=[];selected=null;solved=false;victimShown=false;
   hintsUsed=0;secs=0;openClue={};accusedIdx=null;
@@ -1124,21 +1297,21 @@ function startCase(seed,daily){newCase(seed,daily);go("board");startTimer();}
 async function beginDaily(){
   if(!authed()){openAuth();return;}
   const r=await api("/play/daily",{method:"POST"});
-  if(r.status===403){toast("J\u00E1 encerraste o caso de hoje.");renderHome();renderDaily();return;}
-  if(!r.ok){toast(r.status===0?"Sem liga\u00E7\u00E3o ao servidor.":"Erro ao iniciar.");return;}
+  if(r.status===403){toast(U("dailyClosed"));renderHome();renderDaily();return;}
+  if(!r.ok){toast(r.status===0?U("errNetwork"):U("errStart"));return;}
   startCase(dailySeed(),true);
 }
 async function beginFree(){
   if(!authed()){openAuth();return;}
   const r=await api("/play/free",{method:"POST"});
   if(r.status===402){openPaywall();return;}      // limite grátis atingido
-  if(!r.ok){toast(r.status===0?"Sem liga\u00E7\u00E3o ao servidor.":"Erro ao iniciar.");return;}
+  if(!r.ok){toast(r.status===0?U("errNetwork"):U("errStart"));return;}
   startCase((Math.random()*1e9)|0,false);
 }
 
 function render(){
-  $("kicker").textContent="Caso "+caseNo+" \u00B7 "+["","F\u00E1cil","M\u00E9dio","Dif\u00EDcil"][level]+(isDaily?" \u00B7 Di\u00E1rio":"");
-  $("caseTitle").textContent=G.L.name;
+  $("kicker").textContent=U("caseW")+" "+caseNo+" \u00B7 "+lvlName(level)+(isDaily?" \u00B7 "+U("diario"):"");
+  $("caseTitle").textContent=tr(G.L.name);
   tickClock();
   renderGrid();renderStrip();renderClues();updateBar();
 }
@@ -1201,7 +1374,7 @@ function placeRoomLabels(){
     if(!n)continue;
     const cr=sr/n,cc=sc/n;let best=ca[0],bd=1e9;
     for(const[r,c]of ca){const d=(r-cr)*(r-cr)+(c-cc)*(c-cc);if(d<bd){bd=d;best=[r,c];}}
-    const lab=document.createElement("div");lab.className="roomlabel";lab.textContent=L.rooms[area].short;
+    const lab=document.createElement("div");lab.className="roomlabel";lab.textContent=tr(L.rooms[area].short);
     lab.style.left=((best[1]+0.5)/L.G*100)+"%";
     lab.style.top=((best[0]+0.85)/L.G*100)+"%";
     grid.appendChild(lab);
@@ -1224,7 +1397,7 @@ function renderStrip(){
   const v=document.createElement("div");v.className="pol victim";v.style.setProperty("--tilt","1deg");
   v.innerHTML='<div class="photo">'+portrait((G.seed>>>0)*7+999)+
     '<svg viewBox="0 0 100 110" style="position:absolute;inset:0;width:100%;height:100%"><path d="M22 30 L78 86 M78 30 L22 86" stroke="#c0392b" stroke-width="7" stroke-linecap="round"/></svg></div>'+
-    '<div class="nm">'+G._victim+'</div>';
+    '<div class="nm">'+victimName()+'</div>';
   box.appendChild(v);
 }
 
@@ -1248,7 +1421,7 @@ function renderClues(hintText){
   }
   const v=document.createElement("div");v.className="cl vic open";
   v.innerHTML='<div class="av" style="background:'+"var(--red)"+'">\u2715</div>'+
-    '<div class="tx"><span class="vtag">'+G._theme.emoji+' '+G._victim+'</span>Fica na <b>&uacute;ltima c&eacute;lula dispon&iacute;vel</b>. Quem estiver <b>sozinho na mesma divis&atilde;o</b> \u00E9 '+G._theme.culprit+'.</div>';
+    '<div class="tx"><span class="vtag">'+G._theme.emoji+' '+victimName()+'</span>'+(LANG==="en"?('Stays in the <b>last free cell</b>. Whoever is <b>alone in the same room</b> is '+tr(G._theme.culprit)+'.'):('Fica na <b>\u00FAltima c\u00E9lula dispon\u00EDvel</b>. Quem estiver <b>sozinho na mesma divis\u00E3o</b> \u00E9 '+tr(G._theme.culprit)+'.'))+'</div>';
   box.appendChild(v);
 }
 
@@ -1269,11 +1442,11 @@ function onCell(ci){
   if(selected==null){toast("Escolhe primeiro um suspeito.");return;}
   const prev=placement.indexOf(selected);if(prev>=0)delete placement[prev];
   placement[ci]=selected;selected=null;blip(660,.07);buzz(12);render();
-  if(allPlaced()&&leftoverCell())toast("Todos colocados. O alvo est\u00E1 na c\u00E9lula que sobrou.");
+  if(allPlaced()&&leftoverCell())toast(U("allPlacedTarget"));
 }
 function currentAssign(){const a=new Array(G.S).fill(-1);placement.forEach((p,ci)=>{if(p!=null)a[p]=ci;});return a;}
 function allPlaced(){return placement.filter(x=>x!=null).length===G.S;}
-function updateBar(){const b=$("accuseBtn");b.disabled=!allPlaced()||solved;if(G&&G._theme)b.textContent=G._theme.action;}
+function updateBar(){const b=$("accuseBtn");b.disabled=!allPlaced()||solved;if(G&&G._theme)b.textContent=tr(G._theme.action);}
 
 /* ---------- dica ---------- */
 function showHint(){
@@ -1284,7 +1457,7 @@ function showHint(){
   hintsUsed++;
   renderClues(cl.text(nameMap));
   $("clueList").parentElement.scrollTop=0;
-  toast("Dica "+hintsUsed);
+  toast(U("hintW")+hintsUsed);
 }
 
 /* =========================================================
@@ -1305,11 +1478,11 @@ function openAccuse(){
     m.innerHTML='<h3>O alvo n\u00E3o cabe</h3><p>A c\u00E9lula que sobra n\u00E3o pode ser ocupada. Rev\u00EA as posi\u00E7\u00F5es \u2014 o alvo tem de ficar numa c\u00E9lula dispon\u00EDvel.</p><div class="modal-actions"><button class="btn accuse" id="ac_x" style="flex:1">Rever</button></div>';
     $("accVeil").classList.add("on");$("ac_x").onclick=()=>$("accVeil").classList.remove("on");return;
   }
-  const vRoom=G.L.rooms[G.L.a[vic[0]][vic[1]]].short;
+  const vRoom=tr(G.L.rooms[G.L.a[vic[0]][vic[1]]].short);
   let chosen=null;
-  m.innerHTML='<h3>'+G._theme.action+' \u2014 quem foi?</h3><p>'+G._theme.accuseQ(vRoom)+'</p>'+
+  m.innerHTML='<h3>'+tr(G._theme.action)+' \u2014 '+(LANG==="en"?"who was it?":"quem foi?")+'</h3><p>'+G._theme.accuseQ(vRoom)+'</p>'+
     '<div class="pickrow" id="pg"></div>'+
-    '<div class="modal-actions"><button class="btn" id="ac_c" style="flex:1">Voltar</button><button class="btn accuse" id="ac_go" disabled style="flex:1.3">'+G._theme.action+'</button></div>';
+    '<div class="modal-actions"><button class="btn" id="ac_c" style="flex:1">'+(LANG==="en"?"Back":"Voltar")+'</button><button class="btn accuse" id="ac_go" disabled style="flex:1.3">'+tr(G._theme.action)+'</button></div>';
   const pg=$("pg");
   for(let p=0;p<G.S;p++){
     const el=document.createElement("div");el.className="pick";
@@ -1328,7 +1501,7 @@ function polMini(seed,name,tag,cls){
 function resolveAcc(p){
   solved=true;stopTimer();accusedIdx=p;
   const correct=(p===G.killer),kn=nameMap[G.killer],m=$("accModal");
-  const vicRoom=G.L.rooms[G.L.a[G.cells[G.sol[G.killer]][0]][G.cells[G.sol[G.killer]][1]]].short;
+  const vicRoom=tr(G.L.rooms[G.L.a[G.cells[G.sol[G.killer]][0]][G.cells[G.sol[G.killer]][1]]].short);
   const d=today();
 
   if(correct){
@@ -1355,29 +1528,29 @@ function resolveAcc(p){
   const faster=Math.max(5,Math.min(97,100-Math.round(secs/((level===1?150:level===2?260:420))*55)));
 
   if(correct){
-    m.innerHTML='<div class="stampmark ok"><span class="ring">Resolvido</span></div>'+
-      '<div class="resfoto">'+polMini(G._portraitSeed[G.killer],kn,G._theme.culpTag,"guilty")+'</div>'+
-      '<p style="text-align:center">'+G._theme.winLine(kn,G._victim,vicRoom)+'</p>'+
+    m.innerHTML='<div class="stampmark ok"><span class="ring">'+U("solvedStamp")+'</span></div>'+
+      '<div class="resfoto">'+polMini(G._portraitSeed[G.killer],kn,tr(G._theme.culpTag),"guilty")+'</div>'+
+      '<p style="text-align:center">'+G._theme.winLine(kn,victimName(),vicRoom)+'</p>'+
       '<div class="stats3" style="margin:0 0 12px">'+
-        '<div class="stat paper"><div class="v">'+fmt(secs)+'</div><div class="l">Tempo</div></div>'+
-        '<div class="stat paper"><div class="v">'+hintsUsed+'</div><div class="l">Dicas</div></div>'+
-        '<div class="stat paper"><div class="v red">'+S.streak+'</div><div class="l">Sequ\u00EAncia</div></div>'+
+        '<div class="stat paper"><div class="v">'+fmt(secs)+'</div><div class="l">'+U("timeW")+'</div></div>'+
+        '<div class="stat paper"><div class="v">'+hintsUsed+'</div><div class="l">'+U("hintsW")+'</div></div>'+
+        '<div class="stat paper"><div class="v red">'+S.streak+'</div><div class="l">'+U("sequenceW")+'</div></div>'+
       '</div>'+
       (got.length?'<div class="newach"><div class="ic">'+got[0].ic+'</div><div><div class="t">Nova conquista</div><div class="d">'+got[0].t+' \u2014 '+got[0].d+'</div></div></div>':'')+
-      '<div class="card2" style="margin-bottom:2px"><div style="font-family:var(--serif);font-weight:800;font-size:12.5px;margin-bottom:7px">Mais r\u00E1pido que</div>'+
+      '<div class="card2" style="margin-bottom:2px"><div style="font-family:var(--serif);font-weight:800;font-size:12.5px;margin-bottom:7px">'+U("fasterThan")+'</div>'+
       '<div class="bar-pg" style="height:9px"><i style="width:'+faster+'%"></i></div>'+
-      '<div style="font-size:11px;color:var(--ink-soft);margin-top:5px">'+faster+'% dos casos deste n\u00EDvel</div></div>'+
-      '<div class="modal-actions"><button class="btn" id="ac_st" style="flex:1">Registo</button><button class="btn accuse" id="ac_new" style="flex:1.4">Pr\u00F3ximo caso</button></div>';
+      '<div style="font-size:11px;color:var(--ink-soft);margin-top:5px">'+faster+'% '+U("ofCasesLevel")+'</div></div>'+
+      '<div class="modal-actions"><button class="btn" id="ac_st" style="flex:1">'+U("reg")+'</button><button class="btn accuse" id="ac_new" style="flex:1.4">'+U("next")+'</button></div>';
     confetti();
   }else{
-    m.innerHTML='<div class="stampmark no"><span class="ring">Caso por fechar</span></div>'+
-      '<div class="resfoto">'+polMini(G._portraitSeed[p],nameMap[p],"APONTADO","acc")+polMini(G._portraitSeed[G.killer],kn,G._theme.culpTag,"guilty")+'</div>'+
-      '<p style="text-align:center">'+G._theme.loseLine(nameMap[p],kn,G._victim,vicRoom)+'</p>'+
-      '<div class="card2" style="margin-bottom:2px"><div style="font-family:var(--serif);font-weight:800;font-size:12.5px;margin-bottom:7px">Onde falhou</div>'+
+    m.innerHTML='<div class="stampmark no"><span class="ring">'+U("openStamp")+'</span></div>'+
+      '<div class="resfoto">'+polMini(G._portraitSeed[p],nameMap[p],(LANG==="en"?"NAMED":"APONTADO"),"acc")+polMini(G._portraitSeed[G.killer],kn,tr(G._theme.culpTag),"guilty")+'</div>'+
+      '<p style="text-align:center">'+G._theme.loseLine(nameMap[p],kn,victimName(),vicRoom)+'</p>'+
+      '<div class="card2" style="margin-bottom:2px"><div style="font-family:var(--serif);font-weight:800;font-size:12.5px;margin-bottom:7px">'+U("whereFailed")+'</div>'+
       '<div class="cl open" style="cursor:default;margin:0 0 8px"><div class="av" style="background:'+pawnMap[G.killer]+'">'+kn[0]+'</div><div class="tx">'+
       bold((G.clues.filter(c=>c.p===G.killer)[0]||G.clues[0]).text(nameMap))+'</div></div>'+
       '<div style="display:flex;gap:10px;font-size:11.5px;color:var(--ink-soft)"><span>Tempo '+fmt(secs)+'</span><span>\u00B7</span><span>'+hintsUsed+' dicas</span><span>\u00B7</span><span>Sequ\u00EAncia reposta</span></div></div>'+
-      '<div class="modal-actions"><button class="btn" id="ac_see" style="flex:1">Ver a cena</button><button class="btn accuse" id="ac_new" style="flex:1.2">Novo caso</button></div>';
+      '<div class="modal-actions"><button class="btn" id="ac_see" style="flex:1">'+U("seeScene")+'</button><button class="btn accuse" id="ac_new" style="flex:1.2">'+U("newCaseW")+'</button></div>';
     const se=$("ac_see");if(se)se.onclick=()=>{$("accVeil").classList.remove("on");revealKiller();};
   }
   const st=$("ac_st");if(st)st.onclick=()=>{$("accVeil").classList.remove("on");go("stats");};
@@ -1410,31 +1583,31 @@ function renderHome(){
   if(ha){
     const st=ACCOUNT.state;
     if(!authed()){
-      ha.innerHTML='<div class="acctbar"><span class="accinfo">Convidado \u00B7 caso do dia + 1 extra</span>'+
-        '<button class="btn accuse acctbtn" id="ha_login">Entrar</button></div>';
+      ha.innerHTML='<div class="acctbar"><span class="accinfo">'+U("guest")+'</span>'+
+        '<button class="btn accuse acctbtn" id="ha_login">'+U("login")+'</button></div>';
       $("ha_login").onclick=()=>openAuth("login");
     }else if(premium()){
       ha.innerHTML='<div class="acctbar"><span class="accinfo"><b>Premium</b> \u00B7 '+(st?st.email:'')+'</span>'+
-        '<button class="btn acctbtn" id="ha_manage">Gerir</button></div>';
+        '<button class="btn acctbtn" id="ha_manage">'+U("manage")+'</button></div>';
       $("ha_manage").onclick=openPortal;
     }else{
       const rem=st&&st.free?st.free.remaining:0;
-      ha.innerHTML='<div class="acctbar"><span class="accinfo">'+(st?st.email:'')+' \u00B7 '+rem+' extra hoje</span>'+
+      ha.innerHTML='<div class="acctbar"><span class="accinfo">'+(st?st.email:'')+' \u00B7 '+rem+' '+U("extraToday")+'</span>'+
         '<button class="btn accuse acctbtn" id="ha_up">Premium 2,99\u20AC</button>'+
-        '<button class="btn acctbtn" id="ha_out" style="flex:none;padding:8px 10px">Sair</button></div>';
+        '<button class="btn acctbtn" id="ha_out" style="flex:none;padding:8px 10px">'+U("logout")+'</button></div>';
       $("ha_up").onclick=openPaywall;
       $("ha_out").onclick=doLogout;
     }
   }
   const th=THEMES[Math.floor(mulberry32(dailySeed()+3)()*THEMES.length)];
   $("homeDaily").innerHTML=
-    (done?'':'<div class="tagnew">NOVO</div>')+
-    '<div class="eyebrow">Caso do dia \u00B7 '+d.getDate()+" "+MO[d.getMonth()]+'</div>'+
-    '<h2>'+th.title+'</h2>'+
-    '<div class="blurb">'+(done?"J\u00E1 encerraste o caso de hoje. Volta amanh\u00E3 para o pr\u00F3ximo.":"Um caso novo todos os dias. Resolve a grelha e aponta quem n\u00E3o tem \u00E1libi.")+'</div>'+
-    '<div class="chips"><span class="chip">'+["","4\u00D74","5\u00D75","6\u00D76"][level]+'</span><span class="chip">'+["","3","4","5"][level]+' suspeitos</span><span class="chip on">'+["","F\u00E1cil","M\u00E9dio","Dif\u00EDcil"][level]+'</span></div>'+
-    '<div class="row" style="margin-top:12px"><button class="btn accuse" id="hd_go" style="flex:1.6">'+(done?"Caso avulso":"Investigar")+'</button>'+
-    '<button class="btn" id="hd_rules" style="flex:1">Regras</button></div>';
+    (done?'':'<div class="tagnew">'+U("novo")+'</div>')+
+    '<div class="eyebrow">'+U("dailyCaseDate")+' \u00B7 '+d.getDate()+" "+MO[d.getMonth()]+'</div>'+
+    '<h2>'+(LANG==='en'&&th.titleEN?th.titleEN:th.title)+'</h2>'+
+    '<div class="blurb">'+(done?U("dailyDoneBlurb"):U("dailyBlurb"))+'</div>'+
+    '<div class="chips"><span class="chip">'+["","4\u00D74","5\u00D75","6\u00D76"][level]+'</span><span class="chip">'+["","3","4","5"][level]+' '+U("suspects")+'</span><span class="chip on">'+lvlName(level)+'</span></div>'+
+    '<div class="row" style="margin-top:12px"><button class="btn accuse" id="hd_go" style="flex:1.6">'+(done?U("loose"):U("investigate"))+'</button>'+
+    '<button class="btn" id="hd_rules" style="flex:1">'+U("rules")+'</button></div>';
   $("hd_go").onclick=()=>done?beginFree():beginDaily();
   $("hd_rules").onclick=openRules;
 
@@ -1443,7 +1616,7 @@ function renderHome(){
     '<div class="card2 resume" id="hr" style="margin-top:12px"><div class="mini">'+
       Array.from({length:9},(_,i)=>'<i'+(i===4?' class="k"':'')+'></i>').join("")+
     '</div><div style="flex:1;min-width:0"><div class="nm">Caso '+caseNo+' \u00B7 '+G.L.name+'</div>'+
-    '<div class="sub">'+placement.filter(x=>x!=null).length+' de '+G.S+' colocados \u00B7 '+fmt(secs)+' decorridos</div>'+
+    '<div class="sub">'+placement.filter(x=>x!=null).length+' '+U("ofW")+' '+G.S+' '+U("placedOf")+' \u00B7 '+fmt(secs)+' '+U("elapsed")+'</div>'+
     '<div class="bar-pg"><i style="width:'+Math.round(placement.filter(x=>x!=null).length/G.S*100)+'%"></i></div></div>'+
     '<div style="font-weight:800;font-size:20px">\u203A</div></div>'
     :(last?'<div class="card2" style="margin-top:12px;display:flex;align-items:center;gap:11px">'+
@@ -1453,7 +1626,7 @@ function renderHome(){
   const hr=$("hr");if(hr)hr.onclick=()=>go("board");
 
   $("homeLevels").innerHTML=LVLS.map(([lv,t,g,col])=>
-    '<div class="lvl3'+(level===lv?" cur":"")+'" data-lv="'+lv+'"><div class="b" style="background:'+col+'">'+lv+'</div><div class="t">'+t+'</div><div class="d">'+g+'</div></div>').join("");
+    '<div class="lvl3'+(level===lv?" cur":"")+'" data-lv="'+lv+'"><div class="b" style="background:'+col+'">'+lv+'</div><div class="t">'+lvlName(lv)+'</div><div class="d">'+g+'</div></div>').join("");
   $("homeLevels").querySelectorAll(".lvl3").forEach(el=>el.onclick=()=>{
     level=+el.dataset.lv;saveStats();beginFree();
   });
@@ -1461,9 +1634,9 @@ function renderHome(){
   const bs=Math.min.apply(null,[1,2,3].map(l=>S.best[l]||0).filter(x=>x>0).concat([0]))||0;
   const bl=[1,2,3].map(l=>S.best[l]).filter(x=>x>0);
   $("homeStats").innerHTML=
-    '<div class="stat"><div class="v">'+S.solvedCount+'</div><div class="l">Resolvidos</div></div>'+
-    '<div class="stat"><div class="v red">'+S.streak+'</div><div class="l">Dias seguidos</div></div>'+
-    '<div class="stat"><div class="v">'+(bl.length?fmt(Math.min.apply(null,bl)):"\u2014")+'</div><div class="l">Melhor</div></div>';
+    '<div class="stat"><div class="v">'+S.solvedCount+'</div><div class="l">'+U("resolved")+'</div></div>'+
+    '<div class="stat"><div class="v red">'+S.streak+'</div><div class="l">'+U("daysStreak")+'</div></div>'+
+    '<div class="stat"><div class="v">'+(bl.length?fmt(Math.min.apply(null,bl)):"\u2014")+'</div><div class="l">'+U("best")+'</div></div>';
 }
 
 /* =========================================================
@@ -1482,23 +1655,23 @@ function renderDaily(){
   }
   $("dailyBody").innerHTML=
     '<div class="kicker" style="font-family:var(--serif);font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--ink-soft)">'+
-      ["Domingo","Segunda","Ter\u00E7a","Quarta","Quinta","Sexta","S\u00E1bado"][d.getDay()]+", "+d.getDate()+" de "+["janeiro","fevereiro","mar\u00E7o","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"][d.getMonth()]+
+      (LANG==="en"?(["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()]+", "+["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()]+" "+d.getDate()):(["Domingo","Segunda","Ter\u00E7a","Quarta","Quinta","Sexta","S\u00E1bado"][d.getDay()]+", "+d.getDate()+" de "+["janeiro","fevereiro","mar\u00E7o","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"][d.getMonth()]))+
     '</div>'+
-    '<div style="font-family:var(--serif);font-weight:800;font-size:25px;line-height:1.1">O caso de hoje</div>'+
+    '<div style="font-family:var(--serif);font-weight:800;font-size:25px;line-height:1.1">'+U("todaysCase")+'</div>'+
     '<div class="pol" style="width:186px;--tilt:-2deg;cursor:default;box-shadow:4px 5px 0 rgba(36,31,46,.28)">'+
       '<div class="photo">'+portrait(dailySeed()*7+999)+
       '<svg viewBox="0 0 100 110" style="position:absolute;inset:0;width:100%;height:100%"><path d="M22 30 L78 86 M78 30 L22 86" stroke="#c0392b" stroke-width="7" stroke-linecap="round"/></svg></div>'+
-      '<div class="nm" style="font-size:17px">'+(()=>{const dt=pickTheme(dailySeed());return dt.names[Math.floor(mulberry32(dailySeed()+5)()*dt.names.length)];})()+'</div></div>'+
+      '<div class="nm" style="font-size:17px">'+(()=>{const dt=pickTheme(dailySeed());const ix=Math.floor(mulberry32(dailySeed()+5)()*dt.names.length);return themeName(dt,ix);})()+'</div></div>'+
     '<div class="cl vic open" style="cursor:default;width:100%;margin:0"><div class="av" style="background:var(--red)">\u2715</div>'+
-      '<div class="tx"><span class="vtag">'+pickTheme(dailySeed()).emoji+' O caso</span>Passou-se '+(th.title.charAt(0)==="A"?"na ":"no ")+th.title.slice(2)+'. Ningu\u00E9m saiu do edif\u00EDcio.</div></div>'+
+      '<div class="tx"><span class="vtag">'+pickTheme(dailySeed()).emoji+' '+U("theCase")+'</span>Passou-se '+(th.title.charAt(0)==="A"?"na ":"no ")+th.title.slice(2)+'. Ningu\u00E9m saiu do edif\u00EDcio.</div></div>'+
     '<div class="card2" style="width:100%">'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px">'+
-      '<span style="font-family:var(--serif);font-weight:800;font-size:12.5px">Sequ\u00EAncia</span>'+
+      '<span style="font-family:var(--serif);font-weight:800;font-size:12.5px">'+U("seqW")+'</span>'+
       '<span style="font-weight:800;font-size:12.5px;color:var(--red)">'+S.streak+' dia'+(S.streak===1?"":"s")+'</span></div>'+
       '<div class="streak7">'+week+'</div></div>'+
-    '<button class="btn accuse" id="dl_go" style="width:100%;flex:none'+(done?';opacity:.5;pointer-events:none':'')+'"'+(done?' disabled':'')+'>'+(done?"Caso encerrado \u00B7 volta amanh\u00E3":"Come\u00E7ar a investigar")+'</button>'+
+    '<button class="btn accuse" id="dl_go" style="width:100%;flex:none'+(done?';opacity:.5;pointer-events:none':'')+'"'+(done?' disabled':'')+'>'+(done?U("caseClosedTomorrow"):U("startInvestigating"))+'</button>'+
     '<div style="font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--ink-soft);margin-top:-4px">'+
-      (S.solvedCount?"O teu tempo m\u00E9dio: "+fmt(Math.round(S.hist.filter(h=>h.ok).reduce((a,h)=>a+h.t,0)/Math.max(1,S.hist.filter(h=>h.ok).length))):"Ainda sem tempos registados")+'</div>';
+      (S.solvedCount?U("yourAvgTime")+fmt(Math.round(S.hist.filter(h=>h.ok).reduce((a,h)=>a+h.t,0)/Math.max(1,S.hist.filter(h=>h.ok).length))):U("noTimesYet"))+'</div>';
   $("dl_go").onclick=()=>{if(!dailyDone())beginDaily();};
 }
 
@@ -1512,7 +1685,7 @@ function renderStats(){
   let bars="";
   for(const[lv,t,g,col]of LVLS){
     const b=S.best[lv]||0;
-    bars+='<div class="tline"><span class="lb">'+t+'</span><span class="tr"><i style="width:'+(b?Math.max(8,Math.round(b/maxB*100)):0)+'%;background:'+col+'"></i></span>'+
+    bars+='<div class="tline"><span class="lb">'+lvlName(lv)+'</span><span class="tr"><i style="width:'+(b?Math.max(8,Math.round(b/maxB*100)):0)+'%;background:'+col+'"></i></span>'+
       '<span class="vl">'+(b?fmt(b):"\u2014")+'</span></div>';
   }
   let days="";
@@ -1522,17 +1695,17 @@ function renderStats(){
   }
   const achs=ACHS.map(a=>{
     const on=S.achs.indexOf(a.id)>=0;
-    return '<div class="ach'+(on?"":" lock")+'"><div class="ic">'+(on?a.ic:"?")+'</div><div class="t">'+(on?a.t:"Bloqueada")+'</div></div>';
+    return '<div class="ach'+(on?"":" lock")+'"><div class="ic">'+(on?a.ic:"?")+'</div><div class="t">'+(on?tr(a.t):U("locked"))+'</div></div>';
   }).join("");
   $("statsBody").innerHTML=
     '<div class="stats3" style="margin-top:0">'+
-      '<div class="stat paper"><div class="v">'+S.solvedCount+'</div><div class="l">Resolvidos</div></div>'+
-      '<div class="stat paper"><div class="v">'+acc+'%</div><div class="l">Acerto</div></div>'+
-      '<div class="stat paper"><div class="v red">'+S.streak+'</div><div class="l">Sequ\u00EAncia</div></div>'+
+      '<div class="stat paper"><div class="v">'+S.solvedCount+'</div><div class="l">'+U("resolved")+'</div></div>'+
+      '<div class="stat paper"><div class="v">'+acc+'%</div><div class="l">'+U("accuracy")+'</div></div>'+
+      '<div class="stat paper"><div class="v red">'+S.streak+'</div><div class="l">'+U("sequenceW")+'</div></div>'+
     '</div>'+
-    '<div class="card2" style="margin-top:12px"><div style="font-family:var(--serif);font-weight:800;font-size:12.5px;margin-bottom:10px">Melhor tempo por n\u00EDvel</div><div class="tbar">'+bars+'</div></div>'+
-    '<div class="card2" style="margin-top:12px"><div style="font-family:var(--serif);font-weight:800;font-size:12.5px;margin-bottom:9px">\u00DAltimos 14 dias</div><div class="days14">'+days+'</div></div>'+
-    '<div class="sec-title">Conquistas <span class="muted">'+S.achs.length+' de '+ACHS.length+'</span></div>'+
+    '<div class="card2" style="margin-top:12px"><div style="font-family:var(--serif);font-weight:800;font-size:12.5px;margin-bottom:10px">'+U("bestTimeLvl")+'</div><div class="tbar">'+bars+'</div></div>'+
+    '<div class="card2" style="margin-top:12px"><div style="font-family:var(--serif);font-weight:800;font-size:12.5px;margin-bottom:9px">'+U("last14")+'</div><div class="days14">'+days+'</div></div>'+
+    '<div class="sec-title">'+U("achievements")+' <span class="muted">'+S.achs.length+' '+U("ofW")+' '+ACHS.length+'</span></div>'+
     '<div class="achs">'+achs+'</div>';
 }
 
@@ -1541,17 +1714,17 @@ function renderStats(){
    ========================================================= */
 let archFilter="all";
 function renderArchive(){
-  $("archCount").textContent=S.hist.length?(S.hist.length+" casos encerrados"):"Arquivo de casos";
-  const F=[["all","Todos"],["ok","Resolvidos"],["no","Falhados"]];
+  $("archCount").textContent=S.hist.length?(S.hist.length+" "+U("casesClosed")):U("arquivoCasos");
+  const F=[["all",U("fAll")],["ok",U("fSolved")],["no",U("fFailed")]];
   $("archFilters").innerHTML=F.map(([k,t])=>'<div class="filt'+(archFilter===k?" on":"")+'" data-k="'+k+'">'+t+'</div>').join("");
   $("archFilters").querySelectorAll(".filt").forEach(el=>el.onclick=()=>{archFilter=el.dataset.k;renderArchive();});
   const rows=S.hist.filter(h=>archFilter==="all"||(archFilter==="ok")===!!h.ok);
   $("archList").innerHTML=rows.length?rows.map((h,i)=>
     '<div class="arow"><div class="mk '+(h.ok?"ok":"no")+'">'+(h.ok?"\u2713":"\u2715")+'</div>'+
-    '<div style="flex:1;min-width:0"><div class="nm">Caso '+(S.hist.length-S.hist.indexOf(h))+' \u00B7 '+h.name+'</div>'+
-    '<div class="sub">'+fmtDate(h.d)+' \u00B7 '+["","F\u00E1cil","M\u00E9dio","Dif\u00EDcil"][h.level]+' \u00B7 '+h.killer+(h.daily?' \u00B7 Di\u00E1rio':'')+'</div></div>'+
+    '<div style="flex:1;min-width:0"><div class="nm">'+U("caseW")+' '+(S.hist.length-S.hist.indexOf(h))+' \u00B7 '+tr(h.name)+'</div>'+
+    '<div class="sub">'+fmtDate(h.d)+' \u00B7 '+lvlName(h.level)+' \u00B7 '+h.killer+(h.daily?' \u00B7 '+U("diario"):'')+'</div></div>'+
     '<div class="tm">'+fmt(h.t)+'</div></div>').join("")
-    :'<div class="empty">Ainda sem casos encerrados.<br>Resolve o primeiro e ele aparece aqui.</div>';
+    :'<div class="empty">'+U("archEmpty")+'</div>';
 }
 
 /* =========================================================
@@ -1561,22 +1734,23 @@ function renderSettings(){
   const sw=(k,on)=>'<div class="sw'+(on?" on":"")+'" data-sw="'+k+'"><i></i></div>';
   $("setBody").innerHTML=
     '<div class="list">'+
-      '<div class="li" data-t="som"><div class="g"><div class="t">Som</div><div class="d">Estalidos ao colocar pe\u00E7as</div></div>'+sw("som",S.set.som)+'</div>'+
-      '<div class="li" data-t="vib"><div class="g"><div class="t">Vibra\u00E7\u00E3o</div><div class="d">Resposta t\u00E1til na acusa\u00E7\u00E3o</div></div>'+sw("vib",S.set.vib)+'</div>'+
-      '<div class="li" data-t="cro"><div class="g"><div class="t">Cron\u00F3metro</div><div class="d">Mostrar o tempo durante o caso</div></div>'+sw("cro",S.set.cro)+'</div>'+
-      '<div class="li" data-t="lem"><div class="g"><div class="t">Lembrete di\u00E1rio</div><div class="d">Todos os dias \u00E0s 21:00</div></div>'+sw("lem",S.set.lem)+'</div>'+
+      '<div class="li" data-t="som"><div class="g"><div class="t">'+U("sSom")+'</div><div class="d">'+U("sSomD")+'</div></div>'+sw("som",S.set.som)+'</div>'+
+      '<div class="li" data-t="vib"><div class="g"><div class="t">'+U("sVib")+'</div><div class="d">'+U("sVibD")+'</div></div>'+sw("vib",S.set.vib)+'</div>'+
+      '<div class="li" data-t="cro"><div class="g"><div class="t">'+U("sCro")+'</div><div class="d">'+U("sCroD")+'</div></div>'+sw("cro",S.set.cro)+'</div>'+
+      '<div class="li" data-t="lem"><div class="g"><div class="t">'+U("sLem")+'</div><div class="d">'+U("sLemD")+'</div></div>'+sw("lem",S.set.lem)+'</div>'+
     '</div>'+
-    '<div class="card2" style="margin-top:12px"><div class="t" style="font-family:var(--serif);font-weight:800;font-size:13px">Paleta</div>'+
-      '<div class="d" style="font-size:11px;color:var(--ink-soft)">Muda a cor das divis\u00F5es e do fundo</div>'+
+    '<div class="card2" style="margin-top:12px"><div class="t" style="font-family:var(--serif);font-weight:800;font-size:13px">'+U("palette")+'</div>'+
+      '<div class="d" style="font-size:11px;color:var(--ink-soft)">'+U("paletteD")+'</div>'+
       '<div class="pals">'+PALETTES.map((p,i)=>
         '<div class="pal'+(S.pal===i?" cur":"")+'" data-pal="'+i+'"><div class="sw2" style="background:linear-gradient(180deg,'+p.bgTop+','+p.bgBot+')"></div><div class="nm">'+p.name+'</div></div>').join("")+
       '</div></div>'+
     '<div class="list" style="margin-top:12px">'+
-      '<div class="li" id="setLvl"><span class="g"><span class="t">Dificuldade padr\u00E3o</span></span><span class="val">'+["","F\u00E1cil","M\u00E9dio","Dif\u00EDcil"][level]+' \u203A</span></div>'+
-      '<div class="li" id="setRules"><span class="g"><span class="t">Como se joga</span></span><span class="val">\u203A</span></div>'+
+      '<div class="li" id="setLvl"><span class="g"><span class="t">'+U("defaultDiff")+'</span></span><span class="val">'+lvlName(level)+' \u203A</span></div>'+
+      '<div class="li" id="setRules"><span class="g"><span class="t">'+U("howToPlay")+'</span></span><span class="val">\u203A</span></div>'+
+      '<div class="li" id="setLang"><span class="g"><span class="t">'+U("language")+'</span></span><span class="val">'+(LANG==="en"?"English":"Portugu\u00EAs")+' \u203A</span></div>'+
     '</div>'+
-    '<div class="row" style="margin-top:12px"><button class="btn danger" id="setReset">Repor progresso</button></div>'+
-    '<div class="ver">Mysterioku \u00B7 '+S.solvedCount+' casos resolvidos</div>';
+    '<div class="row" style="margin-top:12px"><button class="btn danger" id="setReset">'+U("resetProg")+'</button></div>'+
+    '<div class="ver">Mysterioku \u00B7 '+S.solvedCount+' '+U("solvedN")+'</div>';
 
   $("setBody").querySelectorAll(".li[data-t]").forEach(el=>el.onclick=()=>{
     const k=el.dataset.t;S.set[k]=!S.set[k];saveStats();blip(560,.05);renderSettings();tickClock();
@@ -1584,19 +1758,20 @@ function renderSettings(){
   $("setBody").querySelectorAll(".pal").forEach(el=>el.onclick=()=>{
     S.pal=+el.dataset.pal;applyPalette(S.pal);saveStats();renderSettings();
   });
-  $("setLvl").onclick=()=>{level=level%3+1;saveStats();renderSettings();toast("Dificuldade: "+["","F\u00E1cil","M\u00E9dio","Dif\u00EDcil"][level]);};
+  $("setLvl").onclick=()=>{level=level%3+1;saveStats();renderSettings();toast(U("diffToast")+lvlName(level));};
   $("setRules").onclick=openRules;
+  $("setLang").onclick=()=>{ setLang(LANG==="en"?"pt":"en"); applyLang(); toast(LANG==="en"?"Language: English":"Idioma: Portugu\u00EAs"); };
   $("setReset").onclick=()=>{
-    S=JSON.parse(JSON.stringify(DEF));level=1;caseNo=1;saveStats();applyPalette(0);renderSettings();toast("Progresso reposto.");
+    S=JSON.parse(JSON.stringify(DEF));level=1;caseNo=1;saveStats();applyPalette(0);renderSettings();toast(U("progReset"));
   };
 }
 
 /* =========================================================
    REGRAS
    ========================================================= */
-function objCard(t,yes){return '<div class="objcard '+(yes?"yes":"no")+'">'+objSvg(t,"objicon")+'<span>'+OBJ[t].name.charAt(0).toUpperCase()+OBJ[t].name.slice(1)+'</span></div>';}
+function objCard(t,yes){const n=OBJ[t].name;return '<div class="objcard '+(yes?"yes":"no")+'">'+objSvg(t,"objicon")+'<span>'+n.charAt(0).toUpperCase()+n.slice(1)+'</span></div>';}
 function openRules(){
-  $("rulesModal").innerHTML=
+  const PT=
    '<h3>Bem-vindo, inspetor</h3>'+
    '<p>Um caso em aberto, uma lista de pessoas e o que cada uma declara. O resto \u00E9 dedu\u00E7\u00E3o.</p>'+
    '<h4>O teu objetivo</h4>'+
@@ -1621,8 +1796,35 @@ function openRules(){
    '<div class="tip"><b>2. Divis\u00E3o a divis\u00E3o.</b> Em vez de veres onde cada pessoa est\u00E1, v\u00EA quem <i>pode</i> ou <i>n\u00E3o pode</i> estar em cada divis\u00E3o.</div>'+
    '<div class="tip"><b>3. Elimina c\u00E9lulas intersetadas.</b> Se uma pessoa s\u00F3 pode ocupar duas c\u00E9lulas, ningu\u00E9m mais pode ocupar os outros dois cantos do ret\u00E2ngulo que elas formam.</div>'+
    '<h4>Como jogar aqui</h4>'+
-   '<p>Toca numa pessoa e depois na c\u00E9lula onde ela estava. Toca na pe\u00E7a para a retirar. Quando estiverem todas colocadas, o alvo aparece na c\u00E9lula que sobrou \u2014 carrega no bot\u00E3o para fechar o caso.</p>'+
-   '<div class="modal-actions"><button class="btn accuse" id="rulesClose" style="flex:1">Percebi</button></div>';
+   '<p>Toca numa pessoa e depois na c\u00E9lula onde ela estava. Toca na pe\u00E7a para a retirar. Quando estiverem todas colocadas, o alvo aparece na c\u00E9lula que sobrou \u2014 carrega no bot\u00E3o para fechar o caso.</p>';
+  const EN=
+   '<h3>Welcome, inspector</h3>'+
+   '<p>An open case, a list of people and what each one states. The rest is deduction.</p>'+
+   '<h4>Your goal</h4>'+
+   '<p>Solve the case: use logic to reconstruct where each person was and find <b>who shared the room with the target</b>.</p>'+
+   '<h4>Rules</h4>'+
+   '<ul>'+
+     '<li>Two people never share the same <b>row</b> or the same <b>column</b>.</li>'+
+     '<li>A person only sits on <b>seating surfaces</b> \u2014 marked green on the grid.</li>'+
+     '<li><b>Blocked furniture</b> (in red) never takes anyone.</li>'+
+     '<li>The case target occupies the <b>remaining cell</b>, revealed once everyone else is in place.</li>'+
+     '<li>Whoever ends up <b>alone with it in the same room</b> closes the case.</li>'+
+   '</ul>'+
+   '<div class="rulebox"><b>\u201CNext to\u201D</b> means directly <b>above, below, left or right</b> of something \u2014 and <b>in the same room</b>.</div>'+
+   '<h4>Can be occupied</h4>'+
+   '<div class="objlist">'+objCard("c",1)+objCard("r",1)+objCard("b",1)+'</div>'+
+   '<h4>Cannot be occupied</h4>'+
+   '<div class="objlist">'+objCard("T")+objCard("V")+objCard("P")+objCard("L")+objCard("X")+'</div>'+
+   '<h4>Windows</h4>'+
+   '<p>A window always appears over the <b>thick lines</b> of the grid. It can sit between two cells \u2014 in that case it\u2019s adjacent to both.</p>'+
+   '<h4>Tips</h4>'+
+   '<div class="tip"><b>1. Row by row, column by column.</b> There\u2019s exactly one person per row and per column. If a row has only one free cell, someone must be there.</div>'+
+   '<div class="tip"><b>2. Room by room.</b> Instead of finding where each person is, see who <i>can</i> or <i>cannot</i> be in each room.</div>'+
+   '<div class="tip"><b>3. Eliminate intersected cells.</b> If a person can only occupy two cells, no one else can occupy the other two corners of the rectangle they form.</div>'+
+   '<h4>How to play here</h4>'+
+   '<p>Tap a person, then the cell where they were. Tap the piece to remove it. When all are placed, the target appears in the leftover cell \u2014 press the button to close the case.</p>';
+  $("rulesModal").innerHTML=(LANG==="en"?EN:PT)+
+   '<div class="modal-actions"><button class="btn accuse" id="rulesClose" style="flex:1">'+U("understood")+'</button></div>';
   $("rulesClose").onclick=()=>$("rulesVeil").classList.remove("on");
   $("rulesVeil").classList.add("on");
 }
@@ -1632,7 +1834,7 @@ function openRules(){
    ========================================================= */
 $("accuseBtn").onclick=openAccuse;
 $("hintBtn").onclick=showHint;
-$("clearBtn").onclick=()=>{if(solved)return;placement=[];selected=null;render();toast("Cena limpa.");};
+$("clearBtn").onclick=()=>{if(solved)return;placement=[];selected=null;render();toast(U("sceneCleared"));};
 $("backBtn").onclick=()=>go("home");
 $("helpBtn").onclick=openRules;
 $("introRules").onclick=openRules;
@@ -1651,15 +1853,15 @@ function openAuth(mode){
   const m=$("authModal");
   const tab=(id,lb,on)=>'<button class="btn'+(on?" accuse":"")+'" id="'+id+'" style="flex:1'+(on?"":";background:transparent;box-shadow:none;border-width:2px")+'">'+lb+'</button>';
   m.innerHTML=
-    '<h3 style="margin-bottom:2px">'+(mode==="login"?"Entrar":"Criar conta")+'</h3>'+
-    '<p style="margin-top:4px">A tua conta guarda o progresso e a subscri\u00E7\u00E3o.</p>'+
-    '<div class="modal-actions" style="margin-bottom:10px">'+tab("au_tl","Entrar",mode==="login")+tab("au_tr","Criar conta",mode==="register")+'</div>'+
+    '<h3 style="margin-bottom:2px">'+(mode==="login"?U("login"):U("createAcc"))+'</h3>'+
+    '<p style="margin-top:4px">'+U("authSaves")+'</p>'+
+    '<div class="modal-actions" style="margin-bottom:10px">'+tab("au_tl",U("login"),mode==="login")+tab("au_tr",U("createAcc"),mode==="register")+'</div>'+
     '<input id="au_email" type="email" placeholder="Email" autocomplete="email" style="width:100%;padding:12px;border:2px solid var(--ink);border-radius:12px;font:inherit;margin-bottom:8px;box-sizing:border-box"/>'+
-    '<input id="au_pass" type="password" placeholder="Palavra-passe (m\u00EDn. 6)" autocomplete="current-password" style="width:100%;padding:12px;border:2px solid var(--ink);border-radius:12px;font:inherit;box-sizing:border-box"/>'+
+    '<input id="au_pass" type="password" placeholder="'+U("passwordPh")+'" autocomplete="current-password" style="width:100%;padding:12px;border:2px solid var(--ink);border-radius:12px;font:inherit;box-sizing:border-box"/>'+
     '<div id="au_err" style="color:var(--red);font-size:12.5px;font-weight:700;min-height:16px;margin:6px 2px"></div>'+
-    '<div class="modal-actions"><button class="btn" id="au_cancel" style="flex:1">Cancelar</button>'+
-    '<button class="btn accuse" id="au_go" style="flex:1.4">'+(mode==="login"?"Entrar":"Criar conta")+'</button></div>'+
-    (GOOGLE_CLIENT_ID?('<div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px;color:var(--ink-soft);font-size:11.5px"><div style="flex:1;height:1px;background:var(--ink);opacity:.2"></div>ou<div style="flex:1;height:1px;background:var(--ink);opacity:.2"></div></div>'+
+    '<div class="modal-actions"><button class="btn" id="au_cancel" style="flex:1">'+U("cancel")+'</button>'+
+    '<button class="btn accuse" id="au_go" style="flex:1.4">'+(mode==="login"?U("login"):U("createAcc"))+'</button></div>'+
+    (GOOGLE_CLIENT_ID?('<div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px;color:var(--ink-soft);font-size:11.5px"><div style="flex:1;height:1px;background:var(--ink);opacity:.2"></div'+(LANG==="en"?"or":"ou")+'<div style="flex:1;height:1px;background:var(--ink);opacity:.2"></div></div>'+
      '<div id="au_google" style="display:flex;justify-content:center"></div>'):'');
   $("authVeil").classList.add("on");
   if(GOOGLE_CLIENT_ID)renderGoogleButton("au_google");
@@ -1669,14 +1871,14 @@ function openAuth(mode){
   $("au_go").onclick=async()=>{
     const email=$("au_email").value.trim(),pass=$("au_pass").value;
     const err=$("au_err");err.textContent="";
-    if(!email||!pass){err.textContent="Preenche o email e a palavra-passe.";return;}
-    $("au_go").disabled=true;$("au_go").textContent="A processar\u2026";
+    if(!email||!pass){err.textContent=U("fillEmailPass");return;}
+    $("au_go").disabled=true;$("au_go").textContent=U("processing");
     const r=await(mode==="login"?doLogin(email,pass):doRegister(email,pass));
-    $("au_go").disabled=false;$("au_go").textContent=(mode==="login"?"Entrar":"Criar conta");
-    if(r.ok){$("authVeil").classList.remove("on");renderHome();toast("Ol\u00E1! Sess\u00E3o iniciada.");}
+    $("au_go").disabled=false;$("au_go").textContent=(mode==="login"?U("login"):U("createAcc"));
+    if(r.ok){$("authVeil").classList.remove("on");renderHome();toast(U("hello"));}
     else{
-      const map={bad_email:"Email inv\u00E1lido.",weak_password:"Palavra-passe demasiado curta.",email_taken:"J\u00E1 existe conta com este email.",bad_credentials:"Email ou palavra-passe errados.",network:"Sem liga\u00E7\u00E3o ao servidor."};
-      err.textContent=map[r.data&&r.data.error]||"Erro. Tenta de novo.";
+      const map={bad_email:U("errBadEmail"),weak_password:U("errWeakPass"),email_taken:U("errTaken"),bad_credentials:U("errBadCred"),network:U("errNetwork")};
+      err.textContent=map[r.data&&r.data.error]||U("errGeneric");
     }
   };
 }
@@ -1684,17 +1886,17 @@ function openPaywall(){
   const m=$("payModal");
   m.innerHTML=
     '<h3 style="margin-bottom:2px">Mysterioku Premium</h3>'+
-    '<p style="margin-top:4px">Como convidado tens o <b>caso do dia</b> e <b>1 caso extra</b> por dia. Passa a Premium e joga <b>sem limites</b>.</p>'+
+    '<p style="margin-top:4px">'+U("pwIntro")+'</p>'+
     '<div class="card2" style="margin:12px 0;text-align:center">'+
-      '<div style="font-family:var(--serif);font-weight:800;font-size:30px;line-height:1">2,99\u20AC<span style="font-size:14px;font-weight:600;color:var(--ink-soft)"> / m\u00EAs</span></div>'+
-      '<div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">Casos ilimitados \u00B7 cancela quando quiseres</div></div>'+
-    '<div class="modal-actions"><button class="btn" id="pw_close" style="flex:1">Agora n\u00E3o</button>'+
-    '<button class="btn accuse" id="pw_go" style="flex:1.5">Subscrever</button></div>';
+      '<div style="font-family:var(--serif);font-weight:800;font-size:30px;line-height:1">2,99\u20AC<span style="font-size:14px;font-weight:600;color:var(--ink-soft)">'+U("perMonth")+'</span></div>'+
+      '<div style="font-size:12.5px;color:var(--ink-soft);margin-top:6px">'+U("unlimitedCancel")+'</div></div>'+
+    '<div class="modal-actions"><button class="btn" id="pw_close" style="flex:1">'+U("notNow")+'</button>'+
+    '<button class="btn accuse" id="pw_go" style="flex:1.5">'+U("subscribe")+'</button></div>';
   $("payVeil").classList.add("on");
   $("pw_close").onclick=()=>$("payVeil").classList.remove("on");
   $("pw_go").onclick=async()=>{
     if(!authed()){$("payVeil").classList.remove("on");openAuth("register");return;}
-    $("pw_go").disabled=true;$("pw_go").textContent="A abrir\u2026";
+    $("pw_go").disabled=true;$("pw_go").textContent=U("opening");
     await startCheckout();
   };
 }
@@ -1702,8 +1904,9 @@ function openPaywall(){
 
 loadStats();
 applyPalette(S.pal);
-$("introCount").textContent=S.solvedCount>0?("Casos resolvidos: "+S.solvedCount):"";
+$("introCount").textContent=S.solvedCount>0?((LANG==="en"?"Cases solved: ":"Casos resolvidos: ")+S.solvedCount):"";
 buildTabs();
+applyLang();
 go("home");
 
 /* Conta: sincroniza estado ao arrancar e trata o regresso do Stripe */
