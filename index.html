@@ -450,7 +450,7 @@ button{font-family:var(--sans)}
 
 <div class="app">
 
-  <!-- ===== INÍCIO ===== -->
+  <!-- ===== INÍCIO (Casos + Diário juntos) ===== -->
   <section class="screen" id="scr-home">
     <div class="ph">
       <div class="kicker" data-i18n="dept">Departamento de Investiga&ccedil;&atilde;o</div>
@@ -458,21 +458,15 @@ button{font-family:var(--sans)}
       <div id="homeAccount"></div>
     </div>
     <div class="scroll">
+      <div class="sec-title" id="homeDailyHead"></div>
       <div class="card2 hi" id="homeDaily"></div>
+      <div class="home-actions" id="homeActions"></div>
+      <div class="sec-title" id="homeResumeHead" style="display:none"></div>
       <div id="homeResume"></div>
-      <div class="sec-title" data-i18n="loose">Caso avulso</div>
-      <div class="levels3" id="homeLevels"></div>
-      <div class="stats3" id="homeStats"></div>
+      <div class="sec-title" id="homeStreakHead"></div>
+      <div id="homeStreak"></div>
     </div>
     <nav class="tabs" id="tabs1"></nav>
-  </section>
-
-  <!-- ===== DIÁRIO ===== -->
-  <section class="screen" id="scr-daily">
-    <div class="scroll">
-      <div class="daily" id="dailyBody"></div>
-    </div>
-    <nav class="tabs" id="tabs2"></nav>
   </section>
 
   <!-- ===== TABULEIRO ===== -->
@@ -649,6 +643,16 @@ const UI={
   startInvestigating:{pt:"Come\u00E7ar a investigar",en:"Start investigating"},
   yourAvgTime:{pt:"O teu tempo m\u00E9dio: ",en:"Your average time: "}, noTimesYet:{pt:"Ainda sem tempos registados",en:"No times recorded yet"},
   seqW:{pt:"Sequ\u00EAncia",en:"Streak"},
+  playH:{pt:"Jogar",en:"Play"}, newInvest:{pt:"Nova investiga\u00E7\u00E3o",en:"New investigation"},
+  inProgressH:{pt:"Em curso",en:"In progress"}, lastCaseH:{pt:"\u00DAltimo caso",en:"Last case"},
+  continueInvest:{pt:"Continuar investiga\u00E7\u00E3o",en:"Continue investigation"},
+  streakHead:{pt:"Sequ\u00EAncia di\u00E1ria ",en:"Daily streak "},
+  foundAtHome:{pt:"Um caso novo todos os dias. Resolve a grelha e aponta quem n\u00E3o tem \u00E1libi.",en:"A new case every day. Solve the grid and point out who has no alibi."},
+  playAgain:{pt:"Caso avulso",en:"Free case"},
+  currentW:{pt:"atual",en:"current"}, useThis:{pt:"Usar este",en:"Use this"},
+  pickLevel:{pt:"Escolher n\u00EDvel",en:"Choose level"}, pickLevelD:{pt:"Cada n\u00EDvel muda o tamanho da grelha e o tipo de pistas.",en:"Each level changes the grid size and the kind of clues."},
+  autoLvl:{pt:"N\u00EDvel autom\u00E1tico",en:"Automatic level"}, autoLvlD:{pt:"Ajusta a dificuldade \u00E0 tua experi\u00EAncia",en:"Adapts difficulty to your experience"},
+  difficulty:{pt:"Dificuldade",en:"Difficulty"}, autoNow:{pt:"autom\u00E1tico \u00B7 ",en:"automatic \u00B7 "},
 };
 function U(k){ return tr(UI[k]); }
 // nível -> label traduzido
@@ -1073,7 +1077,7 @@ function portrait(seed){
    ESTADO PERSISTENTE
    ========================================================= */
 const DEF={level:1,caseNo:1,solvedCount:0,failCount:0,streak:0,winStreak:0,nohintRun:0,
-  lastDaily:"",best:{1:0,2:0,3:0},hist:[],set:{som:true,vib:true,cro:true,lem:false},pal:0,achs:[]};
+  lastDaily:"",best:{1:0,2:0,3:0},hist:[],set:{som:true,vib:true,cro:true,lem:false,auto:false},pal:0,achs:[]};
 let S=JSON.parse(JSON.stringify(DEF));
 function loadStats(){
   try{const v=JSON.parse(localStorage.getItem("mysterioku")||localStorage.getItem("sudocidio")||localStorage.getItem("cluedoku")||"{}");
@@ -1222,15 +1226,14 @@ function tickClock(){const c=$("clock");if(!c)return;c.classList.toggle("off",!S
    ========================================================= */
 const TABS=[
   {id:"home",   lb:"Casos",   svg:'<rect x="3" y="3" width="8" height="8" rx="1.5" fill="currentColor"/><rect x="13" y="3" width="8" height="8" rx="1.5" fill="currentColor" opacity=".45"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="currentColor" opacity=".45"/><rect x="13" y="13" width="8" height="8" rx="1.5" fill="currentColor"/>'},
-  {id:"daily",  lb:"Di\u00E1rio",  svg:'<rect x="3" y="5" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="15.5" r="2.2" fill="currentColor"/>'},
-  {id:"stats",  lb:"Registo", svg:'<rect x="4" y="12" width="4" height="8" rx="1" fill="currentColor"/><rect x="10" y="7" width="4" height="13" rx="1" fill="currentColor"/><rect x="16" y="3" width="4" height="17" rx="1" fill="currentColor"/>'},
   {id:"archive",lb:"Arquivo", svg:'<rect x="3" y="5" width="18" height="3.5" rx="1.5" fill="currentColor"/><rect x="3" y="10.5" width="18" height="3.5" rx="1.5" fill="currentColor"/><rect x="3" y="16" width="18" height="3.5" rx="1.5" fill="currentColor"/>'},
-  {id:"settings",lb:"Ajustes",svg:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>'}
+  {id:"stats",  lb:"Registo", svg:'<rect x="4" y="12" width="4" height="8" rx="1" fill="currentColor"/><rect x="10" y="7" width="4" height="13" rx="1" fill="currentColor"/><rect x="16" y="3" width="4" height="17" rx="1" fill="currentColor"/>'},
+  {id:"settings",lb:"Ajustes",svg:'<path d="M10.4 2.6h3.2l.45 2.34 1.6.66 1.94-1.36 2.26 2.26-1.36 1.94.66 1.6 2.34.45v3.2l-2.34.45-.66 1.6 1.36 1.94-2.26 2.26-1.94-1.36-1.6.66-.45 2.34h-3.2l-.45-2.34-1.6-.66-1.94 1.36-2.26-2.26 1.36-1.94-.66-1.6L2.6 13.6v-3.2l2.34-.45.66-1.6L4.24 6.41 6.5 4.15l1.94 1.36 1.6-.66z" fill="currentColor"/><circle cx="12" cy="12" r="3.1" fill="var(--paper)"/>'}
 ];
 let screen="home";
-const TABLB={home:"casos",daily:"diario",stats:"registo",archive:"arquivo",settings:"ajustes"};
+const TABLB={home:"casos",stats:"registo",archive:"arquivo",settings:"ajustes"};
 function buildTabs(){
-  ["tabs1","tabs2","tabs3","tabs4","tabs5"].forEach(hostId=>{
+  ["tabs1","tabs3","tabs4","tabs5","tabs6"].forEach(hostId=>{
     const host=$(hostId);if(!host)return;host.innerHTML="";
     for(const t of TABS){
       const b=document.createElement("button");
@@ -1248,7 +1251,6 @@ function applyLang(){
   buildTabs();
   // re-render do ecrã ativo
   if(screen==="home")renderHome();
-  else if(screen==="daily")renderDaily&&renderDaily();
   else if(screen==="stats")renderStats&&renderStats();
   else if(screen==="archive")renderArchive&&renderArchive();
   else if(screen==="settings")renderSettings&&renderSettings();
@@ -1262,7 +1264,6 @@ function go(id){
   if(id!=="board")stopTimer();else if(G&&!solved)startTimer();
   buildTabs();
   if(id==="home")renderHome();
-  if(id==="daily")renderDaily();
   if(id==="stats")renderStats();
   if(id==="archive")renderArchive();
   if(id==="settings")renderSettings();
@@ -1297,7 +1298,7 @@ function startCase(seed,daily){newCase(seed,daily);go("board");startTimer();}
 async function beginDaily(){
   if(!authed()){openAuth();return;}
   const r=await api("/play/daily",{method:"POST"});
-  if(r.status===403){toast(U("dailyClosed"));renderHome();renderDaily();return;}
+  if(r.status===403){toast(U("dailyClosed"));renderHome();return;}
   if(!r.ok){toast(r.status===0?U("errNetwork"):U("errStart"));return;}
   startCase(dailySeed(),true);
 }
@@ -1575,10 +1576,55 @@ function confetti(){
 const LVLS=[[1,"F\u00E1cil","4\u00D74","#2d6a4f","Grelha 4\u00D74, 3 suspeitos. Pistas diretas."],
             [2,"M\u00E9dio","5\u00D75","#8a5a1f","Grelha 5\u00D75, 4 suspeitos. Nega\u00E7\u00F5es e dire\u00E7\u00F5es."],
             [3,"Dif\u00EDcil","6\u00D76","#c0392b","Grelha 5\u00D75 ou 6\u00D76, mais dedu\u00E7\u00E3o."]];
+const LVLCOLS=["","#2d6a4f","#8a5a1f","#c0392b"];
+// Descrições dos níveis, bilingues
+const LVLDESC=[{},
+  {pt:"Grelha 4\u00D74, 3 suspeitos. Pistas diretas.",en:"4\u00D74 grid, 3 suspects. Direct clues."},
+  {pt:"Grelha 5\u00D75, 4 suspeitos. Nega\u00E7\u00F5es e dire\u00E7\u00F5es.",en:"5\u00D75 grid, 4 suspects. Negations and directions."},
+  {pt:"Grelha 5\u00D75 ou 6\u00D76, mais dedu\u00E7\u00E3o.",en:"5\u00D75 or 6\u00D76 grid, more deduction."}];
+const LVLGRID=["","4\u00D74","5\u00D75","6\u00D76"], LVLSUS=["","3","4","5"];
+// Nível sugerido pela experiência (volume, taxa de acerto, resultados recentes)
+function autoLevel(){
+  const tot=S.solvedCount+S.failCount;
+  if(S.solvedCount<3)return 1;
+  const acc=tot?S.solvedCount/tot:0;
+  let lv=1;
+  if(S.solvedCount>=12&&acc>=.7)lv=3;
+  else if(S.solvedCount>=4&&acc>=.55)lv=2;
+  const recent=S.hist.slice(0,3);
+  if(recent.length===3&&recent.every(h=>!h.ok))lv=Math.max(1,lv-1);
+  return lv;
+}
+function syncAutoLevel(){if(S.set.auto){const l=autoLevel();if(l!==level){level=l;saveStats();}}return level;}
+// Seletor de nível (modal). Sem argumento: começa um caso avulso no nível escolhido.
+function openLevels(mode){
+  let chosen=level;
+  const card=lv=>'<div class="lvl'+(lv===chosen?" cur":"")+'" data-lv="'+lv+'">'+
+    '<div class="badge" style="background:'+LVLCOLS[lv]+'">'+lv+'</div>'+
+    '<div style="flex:1;min-width:0"><div class="lt">'+lvlName(lv)+
+      (lv===level?' <span style="font-family:var(--sans);font-weight:400;font-size:10.5px;color:var(--ink-soft)">\u00B7 '+U("currentW")+'</span>':'')+'</div>'+
+    '<div class="ld">'+LVLGRID[lv]+' \u00B7 '+LVLSUS[lv]+' '+U("suspects")+'</div>'+
+    '<div class="ld" style="margin-top:3px">'+tr(LVLDESC[lv])+'</div></div></div>';
+  const m=$("rulesModal");
+  m.innerHTML='<h3>'+U("pickLevel")+'</h3><p>'+U("pickLevelD")+'</p>'+
+    '<div class="levels" id="lvGrid">'+[1,2,3].map(card).join("")+'</div>'+
+    '<div class="modal-actions"><button class="btn" id="lv_c" style="flex:1">'+U("cancel")+'</button>'+
+    '<button class="btn accuse" id="lv_go" style="flex:1.4">'+(mode==="default"?U("useThis"):U("investigate"))+'</button></div>';
+  const bind=el=>el.onclick=()=>{chosen=+el.dataset.lv;blip(520,.05);$("lvGrid").innerHTML=[1,2,3].map(card).join("");$("lvGrid").querySelectorAll(".lvl").forEach(bind);};
+  $("lvGrid").querySelectorAll(".lvl").forEach(bind);
+  $("rulesVeil").classList.add("on");
+  $("lv_c").onclick=()=>$("rulesVeil").classList.remove("on");
+  $("lv_go").onclick=()=>{
+    level=chosen;saveStats();
+    $("rulesVeil").classList.remove("on");
+    if(mode==="default"){renderSettings();toast(U("diffToast")+lvlName(level));}
+    else{beginFree();}
+  };
+}
 function dailyDone(){return S.hist.some(h=>h.d===today()&&h.daily);}
 function renderHome(){
   const done=dailyDone(),d=new Date();
-  // Barra de conta
+  // Barra de conta (mantida)
   const ha=$("homeAccount");
   if(ha){
     const st=ACCOUNT.state;
@@ -1600,79 +1646,70 @@ function renderHome(){
     }
   }
   const th=THEMES[Math.floor(mulberry32(dailySeed()+3)()*THEMES.length)];
+  const dt=pickTheme(dailySeed());
+  const vix=Math.floor(mulberry32(dailySeed()+5)()*dt.names.length);
+  const vic=themeName(dt,vix);
+  const loc=(LANG==="en"&&th.titleEN?th.titleEN:th.title);
+
+  // Cabeçalho + cartão do caso do dia (com foto do alvo)
+  $("homeDailyHead").textContent=U("dailyCaseDate");
   $("homeDaily").innerHTML=
     (done?'':'<div class="tagnew">'+U("novo")+'</div>')+
     '<div class="eyebrow">'+U("dailyCaseDate")+' \u00B7 '+d.getDate()+" "+MO[d.getMonth()]+'</div>'+
-    '<h2>'+(LANG==='en'&&th.titleEN?th.titleEN:th.title)+'</h2>'+
-    '<div class="blurb">'+(done?U("dailyDoneBlurb"):U("dailyBlurb"))+'</div>'+
+    '<h2>'+loc+'</h2>'+
+    '<div class="dailyrow">'+
+      '<div class="pol victim" style="--tilt:-2deg;cursor:default">'+
+        '<div class="photo">'+portrait(dailySeed()*7+999)+
+        '<svg viewBox="0 0 100 110" style="position:absolute;inset:0;width:100%;height:100%"><path d="M22 30 L78 86 M78 30 L22 86" stroke="#c0392b" stroke-width="7" stroke-linecap="round"/></svg></div>'+
+        '<div class="nm">'+vic+'</div></div>'+
+      '<div class="dailytx"><div class="vtag">'+dt.emoji+' '+vic+'</div>'+
+        '<div class="blurb">'+(done?U("dailyDoneBlurb"):U("dailyBlurb"))+'</div></div>'+
+    '</div>'+
     '<div class="chips"><span class="chip">'+["","4\u00D74","5\u00D75","6\u00D76"][level]+'</span><span class="chip">'+["","3","4","5"][level]+' '+U("suspects")+'</span><span class="chip on">'+lvlName(level)+'</span></div>'+
-    '<div class="row" style="margin-top:12px"><button class="btn accuse" id="hd_go" style="flex:1.6">'+(done?U("loose"):U("investigate"))+'</button>'+
-    '<button class="btn" id="hd_rules" style="flex:1">'+U("rules")+'</button></div>';
+    '<div class="row" style="margin-top:12px"><button class="btn accuse" id="hd_go" style="flex:1">'+(done?U("playAgain"):U("investigate"))+'</button></div>';
   $("hd_go").onclick=()=>done?beginFree():beginDaily();
-  $("hd_rules").onclick=openRules;
 
+  // Ações: nova investigação + regras
+  $("homeActions").innerHTML=
+    '<div class="sec-title">'+U("playH")+'</div>'+
+    '<button class="btn accuse" id="hm_new" style="flex:1.6">'+U("newInvest")+'</button>'+
+    '<button class="btn" id="hm_rules" style="flex:1">'+U("howToPlay")+'</button>';
+  $("hm_new").onclick=()=>{ if(S.set&&S.set.auto){const l=syncAutoLevel();toast(U("diffToast")+lvlName(l));beginFree();} else openLevels(); };
+  $("hm_rules").onclick=openRules;
+
+  // Retomar / último caso
   const last=S.hist[0];
+  const rh=$("homeResumeHead");
+  rh.style.display=((G&&!solved)||last)?"":"none";
+  rh.innerHTML=(G&&!solved)?U("inProgressH"):(last?U("lastCaseH"):"");
   $("homeResume").innerHTML=(G&&!solved)?
-    '<div class="card2 resume" id="hr" style="margin-top:12px"><div class="mini">'+
+    '<div class="card2 resume" id="hr"><div class="mini">'+
       Array.from({length:9},(_,i)=>'<i'+(i===4?' class="k"':'')+'></i>').join("")+
-    '</div><div style="flex:1;min-width:0"><div class="nm">Caso '+caseNo+' \u00B7 '+G.L.name+'</div>'+
+    '</div><div style="flex:1;min-width:0"><div class="rtag">'+U("continueInvest")+'</div>'+
+    '<div class="nm">'+U("caseW")+' '+caseNo+' \u00B7 '+tr(G.L.name)+'</div>'+
     '<div class="sub">'+placement.filter(x=>x!=null).length+' '+U("ofW")+' '+G.S+' '+U("placedOf")+' \u00B7 '+fmt(secs)+' '+U("elapsed")+'</div>'+
     '<div class="bar-pg"><i style="width:'+Math.round(placement.filter(x=>x!=null).length/G.S*100)+'%"></i></div></div>'+
     '<div style="font-weight:800;font-size:20px">\u203A</div></div>'
-    :(last?'<div class="card2" style="margin-top:12px;display:flex;align-items:center;gap:11px">'+
+    :(last?'<div class="card2" style="display:flex;align-items:center;gap:11px">'+
       '<div class="mk '+(last.ok?"ok":"no")+'" style="width:32px;height:32px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-weight:800;background:'+(last.ok?"var(--hint-cell)":"#f4dcd8")+';color:'+(last.ok?"var(--check)":"var(--red)")+'">'+(last.ok?"\u2713":"\u2715")+'</div>'+
-      '<div style="flex:1"><div class="nm" style="font-family:var(--serif);font-weight:800;font-size:13.5px">\u00DAltimo: '+last.name+'</div>'+
+      '<div style="flex:1"><div class="nm" style="font-family:var(--serif);font-weight:800;font-size:13.5px">'+U("lastW")+' '+tr(last.name)+'</div>'+
       '<div class="sub" style="font-size:11px;color:var(--ink-soft)">'+fmtDate(last.d)+" \u00B7 "+fmt(last.t)+" \u00B7 "+last.killer+'</div></div></div>':'');
   const hr=$("hr");if(hr)hr.onclick=()=>go("board");
 
-  $("homeLevels").innerHTML=LVLS.map(([lv,t,g,col])=>
-    '<div class="lvl3'+(level===lv?" cur":"")+'" data-lv="'+lv+'"><div class="b" style="background:'+col+'">'+lv+'</div><div class="t">'+lvlName(lv)+'</div><div class="d">'+g+'</div></div>').join("");
-  $("homeLevels").querySelectorAll(".lvl3").forEach(el=>el.onclick=()=>{
-    level=+el.dataset.lv;saveStats();beginFree();
-  });
-
-  const bs=Math.min.apply(null,[1,2,3].map(l=>S.best[l]||0).filter(x=>x>0).concat([0]))||0;
-  const bl=[1,2,3].map(l=>S.best[l]).filter(x=>x>0);
-  $("homeStats").innerHTML=
-    '<div class="stat"><div class="v">'+S.solvedCount+'</div><div class="l">'+U("resolved")+'</div></div>'+
-    '<div class="stat"><div class="v red">'+S.streak+'</div><div class="l">'+U("daysStreak")+'</div></div>'+
-    '<div class="stat"><div class="v">'+(bl.length?fmt(Math.min.apply(null,bl)):"\u2014")+'</div><div class="l">'+U("best")+'</div></div>';
-}
-
-/* =========================================================
-   DIÁRIO
-   ========================================================= */
-function renderDaily(){
-  const d=new Date(),done=dailyDone();
-  const th=THEMES[Math.floor(mulberry32(dailySeed()+3)()*THEMES.length)];
+  // Sequência diária (antigo Diário) — calendário de 7 dias
   let week="";
   for(let i=6;i>=0;i--){
-    const dd=dayOffset(-i),k=key(dd),h=S.hist.find(x=>x.d===k&&x.daily);
-    const isToday=i===0;
+    const dd=dayOffset(-i),k=key(dd),h=S.hist.find(x=>x.d===k&&x.daily),isToday=i===0;
     const cls=isToday?(h?(h.ok?"ok":"miss"):"today"):(h?(h.ok?"ok":"miss"):"");
     week+='<div class="d"><div class="box '+cls+'">'+(h?(h.ok?"\u2713":"\u2715"):"")+'</div>'+
       '<div class="lb'+(isToday?" hoje":"")+'">'+WD[dd.getDay()]+'</div></div>';
   }
-  $("dailyBody").innerHTML=
-    '<div class="kicker" style="font-family:var(--serif);font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--ink-soft)">'+
-      (LANG==="en"?(["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()]+", "+["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()]+" "+d.getDate()):(["Domingo","Segunda","Ter\u00E7a","Quarta","Quinta","Sexta","S\u00E1bado"][d.getDay()]+", "+d.getDate()+" de "+["janeiro","fevereiro","mar\u00E7o","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"][d.getMonth()]))+
-    '</div>'+
-    '<div style="font-family:var(--serif);font-weight:800;font-size:25px;line-height:1.1">'+U("todaysCase")+'</div>'+
-    '<div class="pol" style="width:186px;--tilt:-2deg;cursor:default;box-shadow:4px 5px 0 rgba(36,31,46,.28)">'+
-      '<div class="photo">'+portrait(dailySeed()*7+999)+
-      '<svg viewBox="0 0 100 110" style="position:absolute;inset:0;width:100%;height:100%"><path d="M22 30 L78 86 M78 30 L22 86" stroke="#c0392b" stroke-width="7" stroke-linecap="round"/></svg></div>'+
-      '<div class="nm" style="font-size:17px">'+(()=>{const dt=pickTheme(dailySeed());const ix=Math.floor(mulberry32(dailySeed()+5)()*dt.names.length);return themeName(dt,ix);})()+'</div></div>'+
-    '<div class="cl vic open" style="cursor:default;width:100%;margin:0"><div class="av" style="background:var(--red)">\u2715</div>'+
-      '<div class="tx"><span class="vtag">'+pickTheme(dailySeed()).emoji+' '+U("theCase")+'</span>Passou-se '+(th.title.charAt(0)==="A"?"na ":"no ")+th.title.slice(2)+'. Ningu\u00E9m saiu do edif\u00EDcio.</div></div>'+
-    '<div class="card2" style="width:100%">'+
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px">'+
-      '<span style="font-family:var(--serif);font-weight:800;font-size:12.5px">'+U("seqW")+'</span>'+
-      '<span style="font-weight:800;font-size:12.5px;color:var(--red)">'+S.streak+' dia'+(S.streak===1?"":"s")+'</span></div>'+
-      '<div class="streak7">'+week+'</div></div>'+
-    '<button class="btn accuse" id="dl_go" style="width:100%;flex:none'+(done?';opacity:.5;pointer-events:none':'')+'"'+(done?' disabled':'')+'>'+(done?U("caseClosedTomorrow"):U("startInvestigating"))+'</button>'+
-    '<div style="font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--ink-soft);margin-top:-4px">'+
-      (S.solvedCount?U("yourAvgTime")+fmt(Math.round(S.hist.filter(h=>h.ok).reduce((a,h)=>a+h.t,0)/Math.max(1,S.hist.filter(h=>h.ok).length))):U("noTimesYet"))+'</div>';
-  $("dl_go").onclick=()=>{if(!dailyDone())beginDaily();};
+  const wins=S.hist.filter(h=>h.ok);
+  $("homeStreakHead").innerHTML=U("streakHead")+'<span class="muted" style="color:var(--red);font-weight:800">'+S.streak+' '+(S.streak===1?U("daysW"):U("daysWp"))+'</span>';
+  $("homeStreak").innerHTML='<div class="card2">'+
+    '<div class="streak7">'+week+'</div>'+
+    '<div style="font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--ink-soft);margin-top:9px">'+
+      (wins.length?U("yourAvgTime")+fmt(Math.round(wins.reduce((a,h)=>a+h.t,0)/wins.length)):U("noTimesYet"))+'</div></div>';
 }
 
 /* =========================================================
@@ -1732,37 +1769,47 @@ function renderArchive(){
    ========================================================= */
 function renderSettings(){
   const sw=(k,on)=>'<div class="sw'+(on?" on":"")+'" data-sw="'+k+'"><i></i></div>';
+  const row=(k,t,d)=>'<div class="li" data-t="'+k+'"><div class="g"><div class="t">'+t+'</div>'+(d?'<div class="d">'+d+'</div>':'')+'</div>'+sw(k,S.set[k])+'</div>';
   $("setBody").innerHTML=
     '<div class="list">'+
-      '<div class="li" data-t="som"><div class="g"><div class="t">'+U("sSom")+'</div><div class="d">'+U("sSomD")+'</div></div>'+sw("som",S.set.som)+'</div>'+
-      '<div class="li" data-t="vib"><div class="g"><div class="t">'+U("sVib")+'</div><div class="d">'+U("sVibD")+'</div></div>'+sw("vib",S.set.vib)+'</div>'+
-      '<div class="li" data-t="cro"><div class="g"><div class="t">'+U("sCro")+'</div><div class="d">'+U("sCroD")+'</div></div>'+sw("cro",S.set.cro)+'</div>'+
-      '<div class="li" data-t="lem"><div class="g"><div class="t">'+U("sLem")+'</div><div class="d">'+U("sLemD")+'</div></div>'+sw("lem",S.set.lem)+'</div>'+
+      row("som",U("sSom"),U("sSomD"))+
+      row("vib",U("sVib"),U("sVibD"))+
+      row("cro",U("sCro"),U("sCroD"))+
+      row("lem",U("sLem"),U("sLemD"))+
     '</div>'+
-    '<div class="card2" style="margin-top:12px"><div class="t" style="font-family:var(--serif);font-weight:800;font-size:13px">'+U("palette")+'</div>'+
-      '<div class="d" style="font-size:11px;color:var(--ink-soft)">'+U("paletteD")+'</div>'+
+    '<div class="card2" style="margin-top:12px"><div style="font-family:var(--serif);font-weight:800;font-size:13px">'+U("language")+'</div>'+
+      '<div style="font-size:11px;color:var(--ink-soft)">'+(LANG==="en"?"Choose the game language":"Escolhe o idioma do jogo")+'</div>'+
+      '<div class="langs">'+
+        '<div class="lang'+(LANG==="pt"?" cur":"")+'" data-lang="pt"><span class="fl">PT</span><span class="ln">Portugu\u00EAs</span></div>'+
+        '<div class="lang'+(LANG==="en"?" cur":"")+'" data-lang="en"><span class="fl">EN</span><span class="ln">English</span></div>'+
+      '</div></div>'+
+    '<div class="card2" style="margin-top:12px"><div style="font-family:var(--serif);font-weight:800;font-size:13px">'+U("palette")+'</div>'+
+      '<div style="font-size:11px;color:var(--ink-soft)">'+U("paletteD")+'</div>'+
       '<div class="pals">'+PALETTES.map((p,i)=>
         '<div class="pal'+(S.pal===i?" cur":"")+'" data-pal="'+i+'"><div class="sw2" style="background:linear-gradient(180deg,'+p.bgTop+','+p.bgBot+')"></div><div class="nm">'+p.name+'</div></div>').join("")+
       '</div></div>'+
     '<div class="list" style="margin-top:12px">'+
-      '<div class="li" id="setLvl"><span class="g"><span class="t">'+U("defaultDiff")+'</span></span><span class="val">'+lvlName(level)+' \u203A</span></div>'+
+      '<div class="li" data-t="auto"><div class="g"><div class="t">'+U("autoLvl")+'</div><div class="d">'+U("autoLvlD")+'</div></div>'+sw("auto",S.set.auto)+'</div>'+
+      (S.set.auto
+        ? '<div class="li muted-li"><span class="g"><span class="t">'+U("difficulty")+'</span></span><span class="val">'+U("autoNow")+lvlName(autoLevel())+'</span></div>'
+        : '<div class="li" id="setLvl"><span class="g"><span class="t">'+U("defaultDiff")+'</span></span><span class="val">'+lvlName(level)+' \u203A</span></div>')+
       '<div class="li" id="setRules"><span class="g"><span class="t">'+U("howToPlay")+'</span></span><span class="val">\u203A</span></div>'+
-      '<div class="li" id="setLang"><span class="g"><span class="t">'+U("language")+'</span></span><span class="val">'+(LANG==="en"?"English":"Portugu\u00EAs")+' \u203A</span></div>'+
     '</div>'+
     '<div class="row" style="margin-top:12px"><button class="btn danger" id="setReset">'+U("resetProg")+'</button></div>'+
     '<div class="ver">Mysterioku \u00B7 '+S.solvedCount+' '+U("solvedN")+'</div>';
 
   $("setBody").querySelectorAll(".li[data-t]").forEach(el=>el.onclick=()=>{
-    const k=el.dataset.t;S.set[k]=!S.set[k];saveStats();blip(560,.05);renderSettings();tickClock();
+    const k=el.dataset.t;S.set[k]=!S.set[k];if(k==="auto")syncAutoLevel();saveStats();blip(560,.05);renderSettings();tickClock();
   });
+  $("setBody").querySelectorAll(".lang").forEach(el=>el.onclick=()=>{ setLang(el.dataset.lang); applyLang(); });
   $("setBody").querySelectorAll(".pal").forEach(el=>el.onclick=()=>{
     S.pal=+el.dataset.pal;applyPalette(S.pal);saveStats();renderSettings();
   });
-  $("setLvl").onclick=()=>{level=level%3+1;saveStats();renderSettings();toast(U("diffToast")+lvlName(level));};
+  const sl=$("setLvl");if(sl)sl.onclick=()=>openLevels("default");
   $("setRules").onclick=openRules;
-  $("setLang").onclick=()=>{ setLang(LANG==="en"?"pt":"en"); applyLang(); toast(LANG==="en"?"Language: English":"Idioma: Portugu\u00EAs"); };
   $("setReset").onclick=()=>{
-    S=JSON.parse(JSON.stringify(DEF));level=1;caseNo=1;saveStats();applyPalette(0);renderSettings();toast(U("progReset"));
+    const lg=LANG;
+    S=JSON.parse(JSON.stringify(DEF));level=1;caseNo=1;LANG=lg;saveStats();applyPalette(0);renderSettings();toast(U("progReset"));
   };
 }
 
@@ -1903,6 +1950,7 @@ function openPaywall(){
 ["authVeil","payVeil"].forEach(v=>{$(v).onclick=e=>{if(e.target===$(v))$(v).classList.remove("on");};});
 
 loadStats();
+if(S.set&&S.set.auto)syncAutoLevel();
 applyPalette(S.pal);
 $("introCount").textContent=S.solvedCount>0?((LANG==="en"?"Cases solved: ":"Casos resolvidos: ")+S.solvedCount):"";
 buildTabs();
