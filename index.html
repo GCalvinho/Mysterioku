@@ -424,9 +424,10 @@ button{font-family:var(--sans)}
 }
 
 /* === Regras funcionais preservadas do Mysterioku (contas/paywall) === */
-.acctbar{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.acctbar{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:10px}
 
-.acctbar .accinfo{flex:1;min-width:0;font-size:11.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acctbar .accinfo{width:100%;text-align:center;font-size:11.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acctbar .acctrow{display:flex;gap:8px;align-items:center;justify-content:center}
 
 .acctbar .accinfo b{color:var(--red)}
 
@@ -632,9 +633,9 @@ const UI={
   fAll:{pt:"Todos",en:"All"}, fSolved:{pt:"Resolvidos",en:"Solved"}, fFailed:{pt:"Falhados",en:"Failed"},
   archEmpty:{pt:"Ainda sem casos encerrados.<br>Resolve o primeiro e ele aparece aqui.",en:"No closed cases yet.<br>Solve your first and it shows up here."},
   sSom:{pt:"Som",en:"Sound"}, sSomD:{pt:"Estalidos ao colocar pe\u00E7as",en:"Clicks when placing pieces"},
-  sVib:{pt:"Vibra\u00E7\u00E3o",en:"Vibration"}, sVibD:{pt:"Resposta t\u00E1til na acusa\u00E7\u00E3o",en:"Haptic feedback on accusation"},
+  sVib:{pt:"Vibra\u00E7\u00E3o",en:"Vibration"}, sVibD:{pt:"Resposta t\u00E1til ao jogar e no resultado",en:"Haptic feedback while playing and on results"},
   sCro:{pt:"Cron\u00F3metro",en:"Timer"}, sCroD:{pt:"Mostrar o tempo durante o caso",en:"Show time during the case"},
-  sLem:{pt:"Lembrete di\u00E1rio",en:"Daily reminder"}, sLemD:{pt:"Todos os dias \u00E0s 21:00",en:"Every day at 9:00 PM"},
+  sLem:{pt:"Lembrete di\u00E1rio",en:"Daily reminder"}, sLemD:{pt:"Ativar as notifica\u00E7\u00F5es di\u00E1rias.",en:"Enable daily notifications."},
   hintW:{pt:"Dica ",en:"Hint "}, errStart:{pt:"Erro ao iniciar.",en:"Couldn't start."},
   todaysCase:{pt:"O caso de hoje",en:"Today's case"}, theCase:{pt:"O caso",en:"The case"},
   happenedIn:{pt:"Passou-se ",en:"It happened "}, noneLeft:{pt:". Ningu\u00E9m saiu do edif\u00EDcio.",en:". No one left the building."},
@@ -653,6 +654,8 @@ const UI={
   pickLevel:{pt:"Escolher n\u00EDvel",en:"Choose level"}, pickLevelD:{pt:"Cada n\u00EDvel muda o tamanho da grelha e o tipo de pistas.",en:"Each level changes the grid size and the kind of clues."},
   autoLvl:{pt:"N\u00EDvel autom\u00E1tico",en:"Automatic level"}, autoLvlD:{pt:"Ajusta a dificuldade \u00E0 tua experi\u00EAncia",en:"Adapts difficulty to your experience"},
   difficulty:{pt:"Dificuldade",en:"Difficulty"}, autoNow:{pt:"autom\u00E1tico \u00B7 ",en:"automatic \u00B7 "},
+  notifUnsupported:{pt:"Este dispositivo n\u00E3o suporta notifica\u00E7\u00F5es.",en:"This device doesn't support notifications."},
+  notifDenied:{pt:"Notifica\u00E7\u00F5es bloqueadas nas defini\u00E7\u00F5es do navegador.",en:"Notifications are blocked in your browser settings."},
 };
 function U(k){ return tr(UI[k]); }
 // nível -> label traduzido
@@ -1185,17 +1188,34 @@ function checkAchs(){const got=[];for(const a of ACHS){if(S.achs.indexOf(a.id)<0
    FEEDBACK
    ========================================================= */
 let AC=null;
+function ac(){ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+// Som com atmosfera de mistério: dois osciladores ligeiramente desafinados,
+// registo grave, ataque suave e cauda longa (sensação de incerteza/suspense).
 function blip(f,dur){
   if(!S.set.som)return;
   try{
-    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
-    const o=AC.createOscillator(),g=AC.createGain();
-    o.type="triangle";o.frequency.value=f;g.gain.value=.06;
-    o.connect(g);g.connect(AC.destination);o.start();
-    g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+dur);
-    o.stop(AC.currentTime+dur);
+    const c=ac(), t=c.currentTime;
+    const master=c.createGain(); master.gain.value=0.0001; master.connect(c.destination);
+    // filtro passa-baixo para tirar o brilho e soar mais abafado/misterioso
+    const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=Math.min(2600,f*3+400); lp.Q.value=6; lp.connect(master);
+    // dois osciladores: um seno grave + um triângulo desafinado
+    const o1=c.createOscillator(); o1.type="sine"; o1.frequency.value=f;
+    const o2=c.createOscillator(); o2.type="triangle"; o2.frequency.value=f*1.005; // leve desafinação = tensão
+    o1.connect(lp); o2.connect(lp);
+    // envelope: ataque suave, decaimento longo
+    const atk=Math.min(0.05,dur*0.4), peak=0.09;
+    master.gain.setValueAtTime(0.0001,t);
+    master.gain.exponentialRampToValueAtTime(peak,t+atk);
+    master.gain.exponentialRampToValueAtTime(0.0001,t+dur*1.8);
+    // ligeiro glide descendente = sensação de dúvida
+    o1.frequency.setValueAtTime(f,t); o1.frequency.exponentialRampToValueAtTime(f*0.94,t+dur*1.6);
+    o2.frequency.setValueAtTime(f*1.005,t); o2.frequency.exponentialRampToValueAtTime(f*0.94*1.005,t+dur*1.6);
+    o1.start(t); o2.start(t);
+    o1.stop(t+dur*1.9); o2.stop(t+dur*1.9);
   }catch(e){}
 }
+// Acorde curto (para vitória/derrota) — sequência de notas com o mesmo timbre de mistério
+function chord(freqs,gap,dur){ if(!S.set.som)return; freqs.forEach((f,i)=>setTimeout(()=>blip(f,dur||0.22),i*(gap||90))); }
 function buzz(ms){if(S.set.vib&&navigator.vibrate)try{navigator.vibrate(ms);}catch(e){}}
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("on"),2000);}
 
@@ -1514,17 +1534,18 @@ function resolveAcc(p){
       S.streak=(S.hist.some(h=>h.d===y&&h.daily&&h.ok))?(S.streak+1):1;
       S.lastDaily=d;
     }
-    buzz([18,60,18]);blip(880,.12);setTimeout(()=>blip(1180,.16),110);
+    buzz([18,60,18]);chord([220,262,330,440],95,0.26);
   }else{
     S.failCount++;S.winStreak=0;S.nohintRun=0;
     if(isDaily)S.streak=0;
-    buzz(140);blip(200,.25);
+    buzz(140);chord([196,165,110],130,0.34);
   }
   S.hist.unshift({d:d,ok:correct,t:secs,level:level,name:G.L.name,killer:kn,daily:isDaily,hints:hintsUsed});
   S.hist=S.hist.slice(0,120);
   if(correct&&isDaily&&authed()){api("/play/daily/complete",{method:"POST"}).then(()=>{});}
   const got=checkAchs();
   saveStats();
+  if(S.set&&S.set.auto)syncAutoLevel(); // ajusta o nível à experiência demonstrada
 
   const faster=Math.max(5,Math.min(97,100-Math.round(secs/((level===1?150:level===2?260:420))*55)));
 
@@ -1583,16 +1604,32 @@ const LVLDESC=[{},
   {pt:"Grelha 5\u00D75, 4 suspeitos. Nega\u00E7\u00F5es e dire\u00E7\u00F5es.",en:"5\u00D75 grid, 4 suspects. Negations and directions."},
   {pt:"Grelha 5\u00D75 ou 6\u00D76, mais dedu\u00E7\u00E3o.",en:"5\u00D75 or 6\u00D76 grid, more deduction."}];
 const LVLGRID=["","4\u00D74","5\u00D75","6\u00D76"], LVLSUS=["","3","4","5"];
-// Nível sugerido pela experiência (volume, taxa de acerto, resultados recentes)
+// Nível sugerido pela experiência de resolução: não basta acertar — pesa também
+// o tempo por nível e o uso de dicas. Alguém que resolve fácil devagar, com muitas
+// dicas ou a falhar acusações, ainda não está pronto para subir.
 function autoLevel(){
-  const tot=S.solvedCount+S.failCount;
-  if(S.solvedCount<3)return 1;
-  const acc=tot?S.solvedCount/tot:0;
+  const solved=S.solvedCount, tot=solved+S.failCount;
+  if(solved<3)return 1;
+  const acc=tot?solved/tot:0;
+
+  // Sinais dos casos resolvidos recentes (até 8), por nível
+  const recentWins=S.hist.filter(h=>h.ok).slice(0,8);
+  const avgHints=recentWins.length? recentWins.reduce((a,h)=>a+(h.hints||0),0)/recentWins.length : 0;
+  // Tempo típico "bom" por nível (segundos); acima disto conta como lento
+  const parTime={1:150,2:260,3:420};
+  const cleanFast=recentWins.filter(h=>{const par=parTime[h.level]||200;return (h.hints||0)===0 && h.t>0 && h.t<=par*1.25;}).length;
+  // Últimos 3 resultados (falhar seguido trava a subida)
+  const last3=S.hist.slice(0,3);
+  const struggling = (avgHints>=1.2) || (last3.length===3 && last3.filter(h=>!h.ok).length>=2);
+
   let lv=1;
-  if(S.solvedCount>=12&&acc>=.7)lv=3;
-  else if(S.solvedCount>=4&&acc>=.55)lv=2;
-  const recent=S.hist.slice(0,3);
-  if(recent.length===3&&recent.every(h=>!h.ok))lv=Math.max(1,lv-1);
+  // Subir para 3: muitos casos, boa taxa de acerto, vários resultados limpos e rápidos, poucas dicas
+  if(solved>=12 && acc>=.72 && cleanFast>=4 && avgHints<=0.6) lv=3;
+  // Subir para 2: já com algum volume, acerto razoável, alguns casos limpos, sem depender de dicas
+  else if(solved>=4 && acc>=.55 && cleanFast>=2 && avgHints<=1.0) lv=2;
+
+  // Se está claramente a lutar (muitas dicas ou a falhar seguido), recua um nível
+  if(struggling) lv=Math.max(1,lv-1);
   return lv;
 }
 function syncAutoLevel(){if(S.set.auto){const l=autoLevel();if(l!==level){level=l;saveStats();}}return level;}
@@ -1630,17 +1667,17 @@ function renderHome(){
     const st=ACCOUNT.state;
     if(!authed()){
       ha.innerHTML='<div class="acctbar"><span class="accinfo">'+U("guest")+'</span>'+
-        '<button class="btn accuse acctbtn" id="ha_login">'+U("login")+'</button></div>';
+        '<div class="acctrow"><button class="btn accuse acctbtn" id="ha_login">'+U("login")+'</button></div></div>';
       $("ha_login").onclick=()=>openAuth("login");
     }else if(premium()){
       ha.innerHTML='<div class="acctbar"><span class="accinfo"><b>Premium</b> \u00B7 '+(st?st.email:'')+'</span>'+
-        '<button class="btn acctbtn" id="ha_manage">'+U("manage")+'</button></div>';
+        '<div class="acctrow"><button class="btn acctbtn" id="ha_manage">'+U("manage")+'</button></div></div>';
       $("ha_manage").onclick=openPortal;
     }else{
       const rem=st&&st.free?st.free.remaining:0;
       ha.innerHTML='<div class="acctbar"><span class="accinfo">'+(st?st.email:'')+' \u00B7 '+rem+' '+U("extraToday")+'</span>'+
-        '<button class="btn accuse acctbtn" id="ha_up">Premium 2,99\u20AC</button>'+
-        '<button class="btn acctbtn" id="ha_out" style="flex:none;padding:8px 10px">'+U("logout")+'</button></div>';
+        '<div class="acctrow"><button class="btn accuse acctbtn" id="ha_up">Premium 2,99\u20AC</button>'+
+        '<button class="btn acctbtn" id="ha_out" style="flex:none;padding:8px 10px">'+U("logout")+'</button></div></div>';
       $("ha_up").onclick=openPaywall;
       $("ha_out").onclick=doLogout;
     }
@@ -1799,7 +1836,10 @@ function renderSettings(){
     '<div class="ver">Mysterioku \u00B7 '+S.solvedCount+' '+U("solvedN")+'</div>';
 
   $("setBody").querySelectorAll(".li[data-t]").forEach(el=>el.onclick=()=>{
-    const k=el.dataset.t;S.set[k]=!S.set[k];if(k==="auto")syncAutoLevel();saveStats();blip(560,.05);renderSettings();tickClock();
+    const k=el.dataset.t;S.set[k]=!S.set[k];
+    if(k==="auto")syncAutoLevel();
+    if(k==="lem"&&S.set.lem)requestReminder();
+    saveStats();blip(560,.05);renderSettings();tickClock();
   });
   $("setBody").querySelectorAll(".lang").forEach(el=>el.onclick=()=>{ setLang(el.dataset.lang); applyLang(); });
   $("setBody").querySelectorAll(".pal").forEach(el=>el.onclick=()=>{
@@ -1819,8 +1859,9 @@ function renderSettings(){
 function objCard(t,yes){const n=OBJ[t].name;return '<div class="objcard '+(yes?"yes":"no")+'">'+objSvg(t,"objicon")+'<span>'+n.charAt(0).toUpperCase()+n.slice(1)+'</span></div>';}
 function openRules(){
   const PT=
-   '<h3>Bem-vindo, inspetor</h3>'+
+   '<h3>Bem-vindo</h3>'+
    '<p>Um caso em aberto, uma lista de pessoas e o que cada uma declara. O resto \u00E9 dedu\u00E7\u00E3o.</p>'+
+   '<p>Cada caso tem um <b>tema</b> diferente \u2014 pode ser um homic\u00EDdio, uma espionagem, um roubo, um furto de arte ou uma aparição. O que muda \u00E9 a hist\u00F3ria e quem procuras (o culpado, a toupeira, o c\u00FAmplice\u2026); a l\u00F3gica para resolver \u00E9 sempre a mesma.</p>'+
    '<h4>O teu objetivo</h4>'+
    '<p>Resolver o caso: usar a l\u00F3gica para reconstruir onde estava cada pessoa e chegar a <b>quem partilhou a divis\u00E3o com o alvo</b>.</p>'+
    '<h4>Regras</h4>'+
@@ -1845,8 +1886,9 @@ function openRules(){
    '<h4>Como jogar aqui</h4>'+
    '<p>Toca numa pessoa e depois na c\u00E9lula onde ela estava. Toca na pe\u00E7a para a retirar. Quando estiverem todas colocadas, o alvo aparece na c\u00E9lula que sobrou \u2014 carrega no bot\u00E3o para fechar o caso.</p>';
   const EN=
-   '<h3>Welcome, inspector</h3>'+
+   '<h3>Welcome</h3>'+
    '<p>An open case, a list of people and what each one states. The rest is deduction.</p>'+
+   '<p>Each case has a different <b>theme</b> \u2014 it may be a murder, an espionage case, a theft, an art heist or an apparition. What changes is the story and who you\u2019re after (the culprit, the mole, the accomplice\u2026); the logic to solve it is always the same.</p>'+
    '<h4>Your goal</h4>'+
    '<p>Solve the case: use logic to reconstruct where each person was and find <b>who shared the room with the target</b>.</p>'+
    '<h4>Rules</h4>'+
@@ -1949,6 +1991,38 @@ function openPaywall(){
 }
 ["authVeil","payVeil"].forEach(v=>{$(v).onclick=e=>{if(e.target===$(v))$(v).classList.remove("on");};});
 
+/* =========================================================
+   LEMBRETE DIÁRIO (o que uma PWA permite)
+   Nota: sem servidor de push não há entrega garantida às 10h com a app fechada.
+   Aqui pedimos permissão e, quando o utilizador ABRE a app num novo dia e ainda
+   não fez o caso diário, mostramos uma notificação local (após as 10h).
+   ========================================================= */
+function requestReminder(){
+  try{
+    if(!("Notification"in window)){toast(U("notifUnsupported"));return;}
+    if(Notification.permission==="granted")return;
+    if(Notification.permission==="denied"){toast(U("notifDenied"));return;}
+    Notification.requestPermission().then(p=>{ if(p!=="granted"){S.set.lem=false;saveStats();renderSettings();toast(U("notifDenied"));} });
+  }catch(e){}
+}
+function maybeDailyReminder(){
+  try{
+    if(!S.set||!S.set.lem)return;
+    if(!("Notification"in window)||Notification.permission!=="granted")return;
+    const d=new Date();
+    if(d.getHours()<10)return;                 // só a partir das 10h
+    if(dailyDone())return;                       // já jogou hoje
+    const k=today();
+    if(S._lastNotif===k)return;                  // já avisámos hoje
+    S._lastNotif=k; saveStats();
+    const title=LANG==="en"?"Mysterioku":"Mysterioku";
+    const body=LANG==="en"?"Today's case is waiting. Can you crack it?":"O caso de hoje está à tua espera. Consegues resolvê-lo?";
+    if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+      navigator.serviceWorker.ready.then(reg=>{ try{reg.showNotification(title,{body,tag:"myst-daily"});}catch(e){ new Notification(title,{body}); } }).catch(()=>{ try{new Notification(title,{body});}catch(e){} });
+    }else{ try{new Notification(title,{body}); }catch(e){} }
+  }catch(e){}
+}
+
 loadStats();
 if(S.set&&S.set.auto)syncAutoLevel();
 applyPalette(S.pal);
@@ -1956,6 +2030,7 @@ $("introCount").textContent=S.solvedCount>0?((LANG==="en"?"Cases solved: ":"Caso
 buildTabs();
 applyLang();
 go("home");
+setTimeout(maybeDailyReminder,1500);
 
 /* Conta: sincroniza estado ao arrancar e trata o regresso do Stripe */
 (async function initAccount(){
