@@ -1114,7 +1114,7 @@ const FURN=Object.fromEntries(FURN_KEYS.map(k=>[k,ASSETS+"furniture/"+k+".png"])
 function objImg(type,cls){
   const src=FURN[type];
   const k=cls?cls:"furn";
-  if(src)return '<img class="'+k+'" src="'+src+'" alt="" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">';
+  if(src)return '<img class="'+k+'" src="'+src+'" alt="" style="object-fit:contain">';
   return objSvgVec(type,cls); // fallback: desenho vetorial antigo
 }
 function objSvg(type,cls){ return objImg(type,cls); }
