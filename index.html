@@ -20,8 +20,8 @@
   --bubble:#efeaf3; --bubble-2:#e5dcec;
   --hint-bg:#c9bede; --hint-cell:#e6efce;
   --check:#5a7a2e; --red:#c0392b; --red-deep:#96271b;
-  --room-0:#b9a9c9; --room-1:#cdc0dc; --room-2:#a894bb; --room-3:#c3b2d3;
-  --room-4:#b0a0c4; --room-5:#c7bad9; --room-6:#ab98c0;
+  --room-0:#c9b6d4; --room-1:#b8ccc0; --room-2:#d8c3c8; --room-3:#bcc4dc;
+  --room-4:#dad0bc; --room-5:#c4d1b8; --room-6:#d3bcc9;
   --serif:Georgia,"Times New Roman",serif;
   --sans:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
   --safe-top:env(safe-area-inset-top,0px);
@@ -297,6 +297,16 @@ button{font-family:var(--sans)}
 .modal li{font-size:12.5px;line-height:1.55;margin-bottom:5px;color:var(--ink-soft)}
 .modal li b{color:var(--ink)}
 .modal-actions{display:flex;gap:8px;margin-top:14px}
+/* Story popup */
+.story-hero{display:flex;flex-direction:column;align-items:center;text-align:center;margin:2px 0 10px}
+.story-hero .tphoto{width:96px;height:106px;border:3px solid var(--ink);border-radius:8px;overflow:hidden;box-shadow:3px 4px 0 rgba(36,31,46,.28);margin-bottom:8px;background:#5b4a63}
+.story-hero .tphoto img{width:100%;height:100%;object-fit:cover;display:block}
+.story-badge{display:inline-block;font-family:var(--serif);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);background:var(--bubble);border:1.5px solid var(--ink);border-radius:20px;padding:3px 12px;margin-bottom:8px}
+.story-loc{font-family:var(--serif);font-style:italic;color:var(--ink-soft);font-size:13px;margin:2px 0 0}
+.story-cast{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:6px 0 4px}
+.story-cast .c{display:flex;flex-direction:column;align-items:center;width:52px}
+.story-cast .c img{width:42px;height:42px;border-radius:50%;border:2px solid var(--ink);object-fit:cover}
+.story-cast .c span{font-size:9.5px;font-family:var(--serif);font-style:italic;margin-top:2px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px}
 .pickrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
 .pick{border:2px solid var(--ink);border-radius:10px;padding:7px;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--paper)}
 .pick .av{width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;flex:none}
@@ -532,6 +542,7 @@ button{font-family:var(--sans)}
 <div class="toast" id="toast"></div>
 <div class="veil" id="accVeil"><div class="modal" id="accModal"></div></div>
 <div class="veil" id="rulesVeil"><div class="modal" id="rulesModal"></div></div>
+<div class="veil" id="storyVeil"><div class="modal" id="storyModal"></div></div>
 <div class="veil" id="authVeil"><div class="modal" id="authModal"></div></div>
 <div class="veil" id="payVeil"><div class="modal" id="payModal"></div></div>
 
@@ -585,6 +596,9 @@ const UI={
   diffToast:{pt:"Dificuldade: ",en:"Difficulty: "},
   sceneCleared:{pt:"Cena limpa.",en:"Scene cleared."},
   understood:{pt:"Percebi",en:"Got it"},
+  startInvestigation:{pt:"Iniciar investigação",en:"Start investigation"},
+  theCase:{pt:"O caso",en:"The case"},
+  theSuspects:{pt:"Os suspeitos",en:"The suspects"},
   back:{pt:"Voltar",en:"Back"},
   language:{pt:"Idioma",en:"Language"},
   resolved:{pt:"RESOLVIDOS",en:"SOLVED"},
@@ -771,7 +785,12 @@ const THEMES=[
    zones:{T:[0,2],P:[0,2],X:[1,4],W:[0],K:[0],S:[0],b:[0]}, objDensity:0.4},
 ];
 
-const NAMES=["Abigail","Bento","Clara","Duarte","Elsa","Fábio","Guida","Hélder","Inês","João"];
+// Nomes separados por género, para casar com o avatar correto
+const NAMES_M=["Bento","Duarte","Fábio","Hélder","João","Nuno","Rui","Tomás","Vasco","Xavier","Afonso","Gustavo"];
+const NAMES_F=["Abigail","Clara","Elsa","Guida","Inês","Marta","Núria","Sofia","Teresa","Wanda","Beatriz","Rita"];
+// Género aparente de cada avatar (índices 0-24): "m" ou "f"
+const AVATAR_SEX=["m","f","m","f","m","m","f","m","f","m","f","m","f","m","f","m","f","m","f","m","m","f","m","f","m"];
+const NAMES=[...NAMES_M,...NAMES_F]; // compat (fallback)
 const PAWN_COLORS=["#c0392b","#2d6a4f","#8a5a1f","#3d5a80","#6a4c93","#1d7874","#a23e48","#4a5c3a"];
 const VICTIMS=["Lindsey","Vander","Osório","Fátima","Quim","Rosa","Alfredo","Núria","Teodoro","Cristina"];
 const INTROS=[
@@ -802,6 +821,7 @@ const INTROS=[
 const CASE_THEMES=[
   {
     key:"homicidio", emoji:"\uD83D\uDD2A",
+    setting:{pt:"Uma noite fria, uma casa cheia de convidados e um crime que ninguém viu acontecer.",en:"A cold night, a house full of guests and a crime nobody saw happen."},
     targetT:{pt:"a vítima",en:"the victim"}, culprit:{pt:"o culpado",en:"the culprit"}, culpTag:{pt:"O CULPADO",en:"THE CULPRIT"},
     action:{pt:"Acusar",en:"Accuse"},
     names:["Lindsey","Vander","Osório","Fátima","Quim","Rosa","Alfredo","Núria","Teodoro","Cristina"],
@@ -816,6 +836,7 @@ const CASE_THEMES=[
   },
   {
     key:"espionagem", emoji:"\uD83D\uDD75\uFE0F",
+    setting:{pt:"Documentos secretos desapareceram. Alguém nesta sala trabalha para o outro lado.",en:"Secret documents vanished. Someone in this room works for the other side."},
     targetT:{pt:"o dossiê",en:"the dossier"}, culprit:{pt:"a toupeira",en:"the mole"}, culpTag:{pt:"A TOUPEIRA",en:"THE MOLE"},
     action:{pt:"Expor",en:"Expose"},
     names:["o Dossiê Vermelho","o Ficheiro X","o Microfilme","o Cofre de Dados","a Pasta Selada","o Telegrama","o Plano Zero","a Chave Morta"],
@@ -831,6 +852,7 @@ const CASE_THEMES=[
   },
   {
     key:"roubo", emoji:"\uD83D\uDCB0",
+    setting:{pt:"O alarme falhou às três da manhã. Quando acendeu a luz, já lá não estava.",en:"The alarm failed at three a.m. By the time the lights came on, it was gone."},
     targetT:{pt:"o cofre",en:"the safe"}, culprit:{pt:"o cúmplice",en:"the accomplice"}, culpTag:{pt:"O CÚMPLICE",en:"THE ACCOMPLICE"},
     action:{pt:"Denunciar",en:"Report"},
     names:["o Cofre","a Caixa-Forte","o Saco do Dinheiro","o Estojo de Joias","o Malote","o Cofre Antigo","a Gaveta Secreta","o Baú"],
@@ -846,6 +868,7 @@ const CASE_THEMES=[
   },
   {
     key:"arte", emoji:"\uD83D\uDDBC\uFE0F",
+    setting:{pt:"Uma galeria em silêncio, uma moldura vazia e um punhado de suspeitos elegantes.",en:"A silent gallery, an empty frame and a handful of elegant suspects."},
     targetT:{pt:"o quadro",en:"the painting"}, culprit:{pt:"o intruso",en:"the intruder"}, culpTag:{pt:"O INTRUSO",en:"THE INTRUDER"},
     action:{pt:"Apontar",en:"Point out"},
     names:["o Quadro","a Tela Roubada","a Escultura","o Retrato Antigo","a Peça Rara","a Miniatura","o Vaso Ming","a Relíquia"],
@@ -861,6 +884,7 @@ const CASE_THEMES=[
   },
   {
     key:"fantasma", emoji:"\uD83D\uDC7B",
+    setting:{pt:"Dizem que a casa é assombrada. Mas os fantasmas não deixam pegadas — as pessoas sim.",en:"They say the house is haunted. But ghosts leave no footprints — people do."},
     targetT:{pt:"a aparição",en:"the apparition"}, culprit:{pt:"a testemunha",en:"the witness"}, culpTag:{pt:"A TESTEMUNHA",en:"THE WITNESS"},
     action:{pt:"Revelar",en:"Reveal"},
     names:["a Aparição","o Vulto","a Sombra","o Espírito","a Assombração","o Fantasma","a Presença","o Espectro"],
@@ -1404,25 +1428,64 @@ function newCase(seed,daily){
   const rnd=mulberry32(G.seed^0x9e3779b9);
   const idxs=shuffle([...Array(G.S).keys()],rnd);
   nameMap=new Array(G.S);pawnMap=new Array(G.S);
-  const nm=shuffle(NAMES.slice(),rnd),pc=shuffle(PAWN_COLORS.slice(),rnd);
-  for(let i=0;i<G.S;i++){nameMap[idxs[i]]=nm[i%nm.length];pawnMap[idxs[i]]=pc[i%pc.length];}
+  const pc=shuffle(PAWN_COLORS.slice(),rnd);
+  for(let i=0;i<G.S;i++){pawnMap[idxs[i]]=pc[i%pc.length];}
   const rnd2=mulberry32(G.seed+5);
   G._theme=pickTheme(G.seed);
   G._victimIdx=Math.floor(rnd2()*G._theme.names.length);
   G._introIdx=Math.floor(rnd2()*G._theme.intros.length);
   G._portraitSeed=idxs.map((_,i)=>((G.seed>>>0)*31+i*2654435761)>>>0);
-  // Atribui um avatar distinto a cada suspeito (sem repetir no mesmo caso)
+  // Atribui um avatar distinto a cada suspeito e um nome do MESMO género do avatar
   (function(){
     const pool=Array.from({length:AVAT.length},(_,i)=>i);
     const r=mulberry32((G.seed>>>0)^0x9e3779b9);
     for(let i=pool.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=pool[i];pool[i]=pool[j];pool[j]=t;}
     G._avatar=idxs.map((_,i)=>pool[i%pool.length]);
+    // nomes por género, baralhados, sem repetir
+    const mNames=shuffle(NAMES_M.slice(),r), fNames=shuffle(NAMES_F.slice(),r);
+    let mi=0,fi=0;
+    for(let i=0;i<G.S;i++){
+      const ci=idxs[i];
+      const sex=AVATAR_SEX[G._avatar[ci]]||"m";
+      nameMap[ci]=(sex==="f")?fNames[fi++%fNames.length]:mNames[mi++%mNames.length];
+    }
   })();
   placement=[];selected=null;solved=false;victimShown=false;
   hintsUsed=0;secs=0;openClue={};accusedIdx=null;
   render();
 }
-function startCase(seed,daily){newCase(seed,daily);go("board");startTimer();}
+function startCase(seed,daily){newCase(seed,daily);showStory();}
+function enterBoard(){go("board");startTimer();}
+function showStory(){
+  const th=G._theme, t=victimName();
+  // elenco: nomes + avatares dos suspeitos deste caso, pela ordem das células
+  let cast="";
+  const order=[...Array(G.S).keys()].sort((a,b)=>{
+    // ordenar por nome para ficar estável
+    return (nameMap[a]||"").localeCompare(nameMap[b]||"");
+  });
+  for(const p of order){
+    cast+='<div class="c"><img src="'+AVAT[G._avatar[p]]+'" alt=""><span>'+nameMap[p]+'</span></div>';
+  }
+  const badge=(LANG==="en"? (th.titleEN||th.key) : (th.title||th.key));
+  const loc=(th.setting? tr(th.setting) : "");
+  const html=
+    '<div class="story-hero">'+
+      '<div class="story-badge">'+th.emoji+' '+U("theCase")+'</div>'+
+      '<div class="tphoto">'+targetImg(th,G._victimIdx||0)+'</div>'+
+      '<h3 style="margin:2px 0 0">'+t+'</h3>'+
+      (loc?'<div class="story-loc">'+loc+'</div>':'')+
+    '</div>'+
+    '<p>'+themeIntro()+'</p>'+
+    '<p style="margin-bottom:6px"><b>'+objectiveText()+'</b></p>'+
+    '<h4>'+U("theSuspects")+'</h4>'+
+    '<div class="story-cast">'+cast+'</div>'+
+    '<div class="modal-actions"><button class="btn accuse" id="storyStart" style="flex:1">'+U("startInvestigation")+'</button></div>';
+  $("storyModal").innerHTML=html;
+  $("storyStart").onclick=()=>{ $("storyVeil").classList.remove("on"); enterBoard(); };
+  $("storyVeil").classList.add("on");
+}
+function objectiveText(){ return tr(G._theme.objective).replace(/{T}/g,victimName()); }
 
 /* ---- Arranque de casos com validação do servidor ---- */
 // Guarda se o caso atual é o diário, para o marcar como concluído na vitória.
@@ -2036,7 +2099,7 @@ $("clearBtn").onclick=()=>{if(solved)return;placement=[];selected=null;render();
 $("backBtn").onclick=()=>go("home");
 $("helpBtn").onclick=openRules;
 $("introRules").onclick=openRules;
-["accVeil","rulesVeil"].forEach(v=>{$(v).onclick=e=>{if(e.target===$(v))$(v).classList.remove("on");};});
+["accVeil","rulesVeil","storyVeil"].forEach(v=>{$(v).onclick=e=>{if(e.target===$(v))$(v).classList.remove("on");};});
 $("startBtn").onclick=()=>{
   $("intro").classList.add("gone");
   if(AC&&AC.state==="suspended")AC.resume();
